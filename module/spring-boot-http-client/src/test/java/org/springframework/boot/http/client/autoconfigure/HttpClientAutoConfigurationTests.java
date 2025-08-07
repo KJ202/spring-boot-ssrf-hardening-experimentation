@@ -146,6 +146,30 @@ class HttpClientAutoConfigurationTests {
 			});
 	}
 
+	@Test
+	void configuresDnsSecuritySettings() {
+		this.contextRunner.withPropertyValues(
+				"spring.http.client.dns.enabled=true",
+				"spring.http.client.dns.allowed-hosts[0]=^api\\.example\\.com$",
+				"spring.http.client.dns.allowed-ip-ranges[0]=203.0.113.0/24"
+		).run((context) -> {
+			assertThat(context).hasSingleBean(HttpComponentsClientHttpRequestFactoryBuilder.class);
+			HttpComponentsClientHttpRequestFactoryBuilder builder = context.getBean(HttpComponentsClientHttpRequestFactoryBuilder.class);
+			assertThat(builder).extracting("dnsResolver").isNotNull();
+		});
+	}
+
+	@Test
+	void whenDnsSecurityDisabledThenNoDnsResolverConfigured() {
+		this.contextRunner.withPropertyValues(
+				"spring.http.client.dns.enabled=false"
+		).run((context) -> {
+			assertThat(context).hasSingleBean(HttpComponentsClientHttpRequestFactoryBuilder.class);
+			HttpComponentsClientHttpRequestFactoryBuilder builder = context.getBean(HttpComponentsClientHttpRequestFactoryBuilder.class);
+			assertThat(builder).extracting("dnsResolver").isNull();
+		});
+	}
+
 	@Configuration(proxyBeanMethods = false)
 	static class ClientHttpRequestFactoryBuilderCustomizersConfiguration {
 

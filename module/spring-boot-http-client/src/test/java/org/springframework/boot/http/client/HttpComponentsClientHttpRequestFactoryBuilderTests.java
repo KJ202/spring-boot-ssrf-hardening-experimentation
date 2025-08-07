@@ -36,6 +36,7 @@ import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Tests for {@link HttpComponentsClientHttpRequestFactoryBuilder} and
@@ -76,6 +77,42 @@ class HttpComponentsClientHttpRequestFactoryBuilderTests
 		socketConfigCustomizer1.assertCalled();
 		defaultRequestConfigCustomizer.assertCalled();
 		defaultRequestConfigCustomizer1.assertCalled();
+	}
+
+	@Test
+	void withHttpComponentsDnsResolver() {
+		List<String> allowedHosts = List.of(".*\\.example\\.com", "internal\\..*");
+		List<String> allowedIpRanges = List.of("10.0.0.0/8", "192.168.0.0/16");
+		HttpComponentsDnsResolver dnsResolver = new HttpComponentsDnsResolver(allowedHosts, allowedIpRanges);
+		HttpComponentsClientHttpRequestFactory factory = ClientHttpRequestFactoryBuilder.httpComponents()
+			.withConnectionManagerCustomizer((builder) -> builder.setDnsResolver(dnsResolver))
+			.build();
+		
+		HttpClient httpClient = factory.getHttpClient();
+		Object connectionManager = ReflectionTestUtils.getField(httpClient, "connManager");
+		Object actualDnsResolver = ReflectionTestUtils.getField(connectionManager, "dnsResolver");
+		assertThat(actualDnsResolver).isSameAs(dnsResolver);
+		assertThat(dnsResolver.getAllowedHostPatterns()).containsExactlyInAnyOrderElementsOf(allowedHosts);
+		assertThat(dnsResolver.getAllowedIpRanges()).containsExactlyInAnyOrderElementsOf(allowedIpRanges);
+	}
+
+	@Test
+	void httpComponentsDnsResolverValidation() {
+		List<String> allowedHosts = List.of(".*\\.example\\.com", "internal\\..*");
+		List<String> allowedIpRanges = List.of("10.0.0.0/8", "192.168.0.0/16");
+		HttpComponentsDnsResolver dnsResolver = new HttpComponentsDnsResolver(allowedHosts, allowedIpRanges);
+		
+		// Test allowed hosts
+		assertThat(dnsResolver.resolve("api.example.com")).isNotEmpty();
+		assertThat(dnsResolver.resolve("internal.company")).isNotEmpty();
+		
+		// Test disallowed hosts
+		assertThatThrownBy(() -> dnsResolver.resolve("evil.com"))
+			.isInstanceOf(IllegalArgumentException.class)
+			.hasMessageContaining("is not allowed");
+		assertThatThrownBy(() -> dnsResolver.resolve("example.com"))
+			.isInstanceOf(IllegalArgumentException.class)
+			.hasMessageContaining("is not allowed");
 	}
 
 	@Test
