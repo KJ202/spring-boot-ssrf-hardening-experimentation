@@ -35,6 +35,8 @@ public class HttpComponentsDnsResolver implements DnsResolver {
 
     private final List<String> allowedHostPatterns;
 
+    private final List<String> allowedIpRanges;
+
     /**
      * Create a new {@link HttpComponentsDnsResolver} instance.
      * @param allowedHostPatterns the allowed host patterns
@@ -42,6 +44,7 @@ public class HttpComponentsDnsResolver implements DnsResolver {
      */
     public HttpComponentsDnsResolver(List<String> allowedHostPatterns, List<String> allowedIpRanges) {
         this.allowedHostPatterns = allowedHostPatterns;
+        this.allowedIpRanges = allowedIpRanges;
         this.securityDnsHandler = SecurityDnsHandler.builder()
                 .allowList(allowedIpRanges.toArray(new String[0]))
                 .blockAllExternal(true)
@@ -85,6 +88,10 @@ public class HttpComponentsDnsResolver implements DnsResolver {
 
     List<String> getAllowedHostPatterns() {
         return this.allowedHostPatterns;
+    }
+
+    List<String> getAllowedIpRanges() {
+        return this.allowedIpRanges;
     }
 
 }

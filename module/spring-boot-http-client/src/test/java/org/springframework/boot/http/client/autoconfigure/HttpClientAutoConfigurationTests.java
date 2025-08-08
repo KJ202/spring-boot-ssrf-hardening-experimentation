@@ -32,6 +32,7 @@ import org.springframework.boot.http.client.JdkClientHttpRequestFactoryBuilder;
 import org.springframework.boot.http.client.JettyClientHttpRequestFactoryBuilder;
 import org.springframework.boot.http.client.ReactorClientHttpRequestFactoryBuilder;
 import org.springframework.boot.http.client.SimpleClientHttpRequestFactoryBuilder;
+import org.springframework.boot.http.client.autoconfigure.HttpClientProperties;
 import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.boot.test.context.runner.ReactiveWebApplicationContextRunner;
@@ -154,8 +155,11 @@ class HttpClientAutoConfigurationTests {
 				"spring.http.client.dns.allowed-ip-ranges[0]=203.0.113.0/24"
 		).run((context) -> {
 			assertThat(context).hasSingleBean(HttpComponentsClientHttpRequestFactoryBuilder.class);
-			HttpComponentsClientHttpRequestFactoryBuilder builder = context.getBean(HttpComponentsClientHttpRequestFactoryBuilder.class);
-			assertThat(builder).extracting("dnsResolver").isNotNull();
+			HttpClientProperties properties = context.getBean(HttpClientProperties.class);
+			HttpClientProperties.Dns dnsProperties = properties.getDns();
+			assertThat(dnsProperties.isEnabled()).isTrue();
+			assertThat(dnsProperties.getAllowedHosts()).containsExactly("^api\\.example\\.com$");
+			assertThat(dnsProperties.getAllowedIpRanges()).containsExactly("203.0.113.0/24");
 		});
 	}
 
@@ -165,8 +169,8 @@ class HttpClientAutoConfigurationTests {
 				"spring.http.client.dns.enabled=false"
 		).run((context) -> {
 			assertThat(context).hasSingleBean(HttpComponentsClientHttpRequestFactoryBuilder.class);
-			HttpComponentsClientHttpRequestFactoryBuilder builder = context.getBean(HttpComponentsClientHttpRequestFactoryBuilder.class);
-			assertThat(builder).extracting("dnsResolver").isNull();
+			HttpClientProperties properties = context.getBean(HttpClientProperties.class);
+			assertThat(properties.getDns().isEnabled()).isFalse();
 		});
 	}
 

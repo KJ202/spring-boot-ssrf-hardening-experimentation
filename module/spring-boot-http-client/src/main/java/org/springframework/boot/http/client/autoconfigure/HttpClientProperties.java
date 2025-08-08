@@ -16,6 +16,9 @@
 
 package org.springframework.boot.http.client.autoconfigure;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.http.client.ClientHttpRequestFactorySettings;
 
@@ -29,5 +32,57 @@ import org.springframework.boot.http.client.ClientHttpRequestFactorySettings;
  */
 @ConfigurationProperties("spring.http.client")
 public class HttpClientProperties extends AbstractHttpRequestFactoryProperties {
+
+	private final Dns dns = new Dns();
+
+	public Dns getDns() {
+		return this.dns;
+	}
+
+	/**
+	 * DNS configuration.
+	 */
+	public static class Dns {
+
+		/**
+		 * Whether to enable DNS security.
+		 */
+		private boolean enabled = false;
+
+		/**
+		 * Allowed hosts.
+		 */
+		private List<String> allowedHosts = new ArrayList<>();
+
+		/**
+		 * Allowed IP ranges.
+		 */
+		private List<String> allowedIpRanges = new ArrayList<>();
+
+		public boolean isEnabled() {
+			return this.enabled;
+		}
+
+		public void setEnabled(boolean enabled) {
+			this.enabled = enabled;
+		}
+
+		public List<String> getAllowedHosts() {
+			return this.allowedHosts;
+		}
+
+		public void setAllowedHosts(List<String> allowedHosts) {
+			this.allowedHosts = allowedHosts;
+		}
+
+		public List<String> getAllowedIpRanges() {
+			return this.allowedIpRanges;
+		}
+
+		public void setAllowedIpRanges(List<String> allowedIpRanges) {
+			this.allowedIpRanges = allowedIpRanges;
+		}
+
+	}
 
 }

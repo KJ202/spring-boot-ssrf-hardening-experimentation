@@ -22,6 +22,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.boot.http.client.ClientHttpRequestFactoryBuilder;
 
 /**
  * Configuration for {@link HttpComponentsClientHttpRequestFactoryBuilder}.
@@ -40,7 +41,7 @@ public class HttpComponentsClientHttpRequestFactoryBuilderConfiguration {
         HttpComponentsDnsResolver dnsResolver = new HttpComponentsDnsResolver(
                 dnsSettings.getAllowedHosts(), 
                 dnsSettings.getAllowedIpRanges());
-        return HttpComponentsClientHttpRequestFactoryBuilder.create()
+        return ClientHttpRequestFactoryBuilder.httpComponents()
                 .withConnectionManagerCustomizer((builder) -> builder.setDnsResolver(dnsResolver));
     }
 

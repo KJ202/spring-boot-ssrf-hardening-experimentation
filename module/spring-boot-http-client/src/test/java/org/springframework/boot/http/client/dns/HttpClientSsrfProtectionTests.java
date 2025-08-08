@@ -20,14 +20,8 @@ import org.apache.hc.client5.http.DnsResolver;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.boot.autoconfigure.AutoConfigurations;
-import org.springframework.boot.http.client.HttpComponentsClientHttpRequestFactoryBuilder;
 import org.springframework.boot.http.client.HttpComponentsDnsResolver;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
-import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.http.client.ClientHttpRequestFactory;
-import org.springframework.web.client.RestTemplate;
 
 import java.net.InetAddress;
 import java.util.Arrays;
@@ -43,8 +37,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  */
 class HttpClientSsrfProtectionTests {
 
-    private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
-            .withConfiguration(AutoConfigurations.of(TestConfiguration.class));
+    private final ApplicationContextRunner contextRunner = new ApplicationContextRunner();
 
     @Test
     void whenDnsEnabledAndHostAllowedThenResolvesToValidAddress() {
@@ -86,32 +79,6 @@ class HttpClientSsrfProtectionTests {
         });
     }
 
-    @Test
-    void demonstrateManualConfiguration() {
-        // Example of manual configuration without Spring Boot auto-configuration
-        List<String> allowedHosts = Arrays.asList("^api\\.example\\.com$", "^data\\.example\\.com$");
-        List<String> allowedIpRanges = Arrays.asList("203.0.113.0/24", "2001:db8::/32");
-        
-        HttpComponentsDnsResolver dnsResolver = new HttpComponentsDnsResolver(allowedHosts, allowedIpRanges);
-        
-        ClientHttpRequestFactory factory = HttpComponentsClientHttpRequestFactoryBuilder.create()
-                .withConnectionManagerCustomizer((builder) -> builder.setDnsResolver(dnsResolver))
-                .build();
-        
-        RestTemplate restTemplate = new RestTemplate(factory);
-        
-        // The RestTemplate will now use the secure DNS resolver for all requests
-        assertThat(restTemplate).isNotNull();
-    }
-
-    @Configuration(proxyBeanMethods = false)
-    static class TestConfiguration {
-
-        @Bean
-        RestTemplateBuilder restTemplateBuilder(ClientHttpRequestFactory factory) {
-            return new RestTemplateBuilder().requestFactory(() -> factory);
-        }
-
-    }
+    
 
 }
