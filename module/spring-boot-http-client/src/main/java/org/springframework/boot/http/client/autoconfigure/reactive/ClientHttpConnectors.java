@@ -18,6 +18,7 @@ package org.springframework.boot.http.client.autoconfigure.reactive;
 
 import java.time.Duration;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -67,7 +68,8 @@ public final class ClientHttpConnectors {
 				StringUtils::hasText);
 		SslBundle sslBundle = (StringUtils.hasLength(sslBundleName))
 				? this.sslBundles.getObject().getBundle(sslBundleName) : null;
-		return new ClientHttpConnectorSettings(redirects, connectTimeout, readTimeout, sslBundle);
+		Set<String> bannedHosts = getProperty(AbstractClientHttpConnectorProperties::getBannedHosts);
+		return new ClientHttpConnectorSettings(redirects, connectTimeout, readTimeout, sslBundle, bannedHosts);
 	}
 
 	@SuppressWarnings("NullAway") // Lambda isn't detected with the correct nullability
