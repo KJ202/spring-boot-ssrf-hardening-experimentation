@@ -170,6 +170,7 @@ include "module:spring-boot-webmvc"
 include "module:spring-boot-webservices"
 include "module:spring-boot-websocket"
 include "module:spring-boot-zipkin"
+include ":smoke-test:spring-boot-apache-demo"
 
 include "starter:spring-boot-starter"
 include "starter:spring-boot-starter-activemq"

@@ -1,0 +1,14 @@
+plugins {
+	id "java"
+}
+
+description = "Spring Boot Apache Demo"
+
+dependencies {
+	implementation(project(":starter:spring-boot-starter-web"))
+	implementation("org.apache.httpcomponents.client5:httpclient5")
+	testImplementation('org.springframework.boot:spring-boot-starter-test')
+	testImplementation("org.mockito:mockito-junit-jupiter")
+	
+	testImplementation(project(":starter:spring-boot-starter-test"))
+}
