@@ -17,6 +17,7 @@
 package org.springframework.boot.http.client.autoconfigure.reactive;
 
 import java.time.Duration;
+import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 
@@ -67,7 +68,7 @@ class ClientHttpConnectorsTests {
 		TestProperties properties = new TestProperties();
 		ClientHttpConnectors connectors = new ClientHttpConnectors(this.sslBundles, properties);
 		ClientHttpConnectorSettings settings = connectors.settings();
-		assertThat(settings).isEqualTo(new ClientHttpConnectorSettings(null, null, null, null));
+		assertThat(settings).isEqualTo(new ClientHttpConnectorSettings(null, null, null, null, null));
 	}
 
 	@Test
@@ -80,6 +81,7 @@ class ClientHttpConnectorsTests {
 		p2.setConnectTimeout(Duration.ofSeconds(1));
 		p2.setReadTimeout(Duration.ofSeconds(2));
 		p2.getSsl().setBundle("p2");
+		p2.setBannedHosts(Set.of("example.com"));
 		TestProperties p3 = new TestProperties();
 		p3.setRedirects(HttpRedirects.FOLLOW);
 		p3.setConnectTimeout(Duration.ofSeconds(10));
@@ -88,7 +90,7 @@ class ClientHttpConnectorsTests {
 		ClientHttpConnectors connectors = new ClientHttpConnectors(this.sslBundles, p1, p2, p3);
 		ClientHttpConnectorSettings settings = connectors.settings();
 		assertThat(settings).isEqualTo(new ClientHttpConnectorSettings(HttpRedirects.DONT_FOLLOW, Duration.ofSeconds(1),
-				Duration.ofSeconds(2), this.bundleRegistry.getBundle("p2")));
+				Duration.ofSeconds(2), this.bundleRegistry.getBundle("p2"), Set.of("example.com")));
 	}
 
 	static class TestProperties extends AbstractClientHttpConnectorProperties {

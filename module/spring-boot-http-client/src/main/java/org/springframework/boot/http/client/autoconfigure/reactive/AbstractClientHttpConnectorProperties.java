@@ -17,6 +17,7 @@
 package org.springframework.boot.http.client.autoconfigure.reactive;
 
 import java.time.Duration;
+import java.util.Set;
 import java.util.function.Supplier;
 
 import org.jspecify.annotations.Nullable;
@@ -64,6 +65,11 @@ public abstract class AbstractClientHttpConnectorProperties {
 	 */
 	private @Nullable Connector connector;
 
+	/**
+	 * A set of hosts that should not be resolved.
+	 */
+	private @Nullable Set<String> bannedHosts;
+
 	public @Nullable HttpRedirects getRedirects() {
 		return this.redirects;
 	}
@@ -98,6 +104,14 @@ public abstract class AbstractClientHttpConnectorProperties {
 
 	public void setConnector(@Nullable Connector connector) {
 		this.connector = connector;
+	}
+
+	public @Nullable Set<String> getBannedHosts() {
+		return this.bannedHosts;
+	}
+
+	public void setBannedHosts(@Nullable Set<String> bannedHosts) {
+		this.bannedHosts = bannedHosts;
 	}
 
 	/**

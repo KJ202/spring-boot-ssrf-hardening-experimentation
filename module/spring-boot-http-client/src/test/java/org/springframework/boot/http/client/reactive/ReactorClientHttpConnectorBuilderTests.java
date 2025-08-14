@@ -16,8 +16,10 @@
 
 package org.springframework.boot.http.client.reactive;
 
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
@@ -27,10 +29,14 @@ import reactor.netty.http.client.HttpClient;
 
 import org.springframework.boot.http.client.ReactorHttpClientBuilder;
 import org.springframework.http.client.ReactorResourceFactory;
+import org.springframework.http.client.reactive.ClientHttpConnector;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientRequestException;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.spy;
 
@@ -96,6 +102,21 @@ class ReactorClientHttpConnectorBuilderTests
 		return (int) ((HttpClient) ReflectionTestUtils.getField(connector, "httpClient")).configuration()
 			.responseTimeout()
 			.toMillis();
+	}
+
+	@Test
+	void withBannedHosts() {
+		ClientHttpConnector connector = ClientHttpConnectorBuilder.reactor()
+			.withBannedHosts("example.com")
+			.build();
+		WebClient webClient = WebClient.builder().clientConnector(connector).build();
+		try {
+			webClient.get().uri("https://example.com").retrieve().toBodilessEntity().block();
+		}
+		catch (Exception e) {
+			System.out.println(e.getClass().getName());
+			assertThat(e).isInstanceOf(WebClientRequestException.class);
+		}
 	}
 
 }
