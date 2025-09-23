@@ -45,7 +45,7 @@ class ClientHttpRequestFactorySettingsTests {
 		assertThat(settings.connectTimeout()).isNull();
 		assertThat(settings.readTimeout()).isNull();
 		assertThat(settings.sslBundle()).isNull();
-		assertThat(settings.bannedHostDnsResolver()).isNull();
+		assertThat(settings.bannedHost()).isNull();
 	}
 
 	@Test
@@ -55,18 +55,18 @@ class ClientHttpRequestFactorySettingsTests {
 		assertThat(settings.connectTimeout()).isNull();
 		assertThat(settings.readTimeout()).isNull();
 		assertThat(settings.sslBundle()).isNull();
-		assertThat(settings.bannedHostDnsResolver()).isNull();
+		assertThat(settings.bannedHost()).isNull();
 	}
 
 	@Test
-	void createWithBannedHostDnsResolver() {
+	void createWithBannedHost() {
 		ClientHttpRequestFactorySettings settings = ClientHttpRequestFactorySettings.defaults()
 			.withBannedHost("example.com");
-		assertThat(settings.bannedHostDnsResolver()).isNotNull();
+		assertThat(settings.bannedHost()).isEqualTo("example.com");
 	}
 
 	@Test
-	void buildClientWithBannedHostDnsResolver() {
+	void buildClientWithBannedHost() {
 		ClientHttpRequestFactorySettings settings = ClientHttpRequestFactorySettings.defaults()
 			.withBannedHost("example.com");
 		HttpComponentsClientHttpRequestFactory requestFactory = ClientHttpRequestFactoryBuilder.httpComponents()

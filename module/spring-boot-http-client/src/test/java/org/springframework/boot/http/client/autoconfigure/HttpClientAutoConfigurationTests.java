@@ -84,10 +84,8 @@ class HttpClientAutoConfigurationTests {
 	@Test
 	void configuresClientHttpRequestFactorySettingsWithBannedHost() {
 		this.contextRunner.withPropertyValues("spring.http.client.dns.banned=localhost").run((context) -> {
-			BannedHostDnsResolver resolver = context.getBean(BannedHostDnsResolver.class);
-			assertThat(resolver).isNotNull();
 			ClientHttpRequestFactorySettings settings = context.getBean(ClientHttpRequestFactorySettings.class);
-			assertThat(settings.bannedHostDnsResolver()).isEqualTo(resolver);
+			assertThat(settings.bannedHost()).isEqualTo("localhost");
 		});
 	}
 
@@ -96,7 +94,7 @@ class HttpClientAutoConfigurationTests {
 		this.contextRunner.run((context) -> {
 			assertThat(context).doesNotHaveBean(BannedHostDnsResolver.class);
 			ClientHttpRequestFactorySettings settings = context.getBean(ClientHttpRequestFactorySettings.class);
-			assertThat(settings.bannedHostDnsResolver()).isNull();
+			assertThat(settings.bannedHost()).isNull();
 		});
 	}
 

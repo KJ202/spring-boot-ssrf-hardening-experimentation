@@ -22,6 +22,7 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.hc.client5.http.SystemDefaultDnsResolver;
 import org.eclipse.jetty.util.Promise;
 import org.eclipse.jetty.util.SocketAddressResolver;
 
@@ -33,16 +34,21 @@ import org.eclipse.jetty.util.SocketAddressResolver;
  */
 class BannedHostSocketAddressResolver implements SocketAddressResolver {
 
-	private final BannedHostDnsResolver resolver;
+	private final String bannedHost;
 
-	BannedHostSocketAddressResolver(BannedHostDnsResolver resolver) {
-		this.resolver = resolver;
+	private final SystemDefaultDnsResolver defaultDnsResolver = new SystemDefaultDnsResolver();
+
+	BannedHostSocketAddressResolver(String bannedHost) {
+		this.bannedHost = bannedHost;
 	}
 
 	@Override
 	public void resolve(String host, int port, Promise<List<InetSocketAddress>> promise) {
 		try {
-			InetAddress[] addresses = this.resolver.resolve(host);
+			if (host.equals(this.bannedHost)) {
+				throw new UnknownHostException(host);
+			}
+			InetAddress[] addresses = this.defaultDnsResolver.resolve(host);
 			List<InetSocketAddress> socketAddresses = new ArrayList<>(addresses.length);
 			for (InetAddress address : addresses) {
 				socketAddresses.add(new InetSocketAddress(address, port));

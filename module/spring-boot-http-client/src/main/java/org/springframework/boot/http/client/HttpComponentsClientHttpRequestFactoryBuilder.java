@@ -153,8 +153,8 @@ public final class HttpComponentsClientHttpRequestFactoryBuilder
 	protected HttpComponentsClientHttpRequestFactory createClientHttpRequestFactory(
 			ClientHttpRequestFactorySettings settings) {
 		HttpComponentsClientHttpRequestFactoryBuilder builder = this;
-		if (settings.bannedHostDnsResolver() != null) {
-			builder = builder.withDnsResolver(settings.bannedHostDnsResolver());
+		if (settings.bannedHost() != null) {
+			builder = builder.withDnsResolver(new BannedHostDnsResolver(settings.bannedHost()));
 		}
 		HttpClient httpClient = builder.httpClientBuilder
 			.build(asHttpClientSettings(settings.withConnectTimeout(null)));

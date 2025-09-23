@@ -87,18 +87,13 @@ public final class HttpClientAutoConfiguration implements BeanClassLoaderAware {
 
 	@Bean
 	@ConditionalOnMissingBean
-	@ConditionalOnProperty(prefix = "spring.http.client.dns", name = "banned")
-	BannedHostDnsResolver bannedHostDnsResolver() {
+	ClientHttpRequestFactorySettings clientHttpRequestFactorySettings() {
+		ClientHttpRequestFactorySettings settings = this.factories.settings();
 		String bannedHost = this.properties.getDns().getBanned();
-		Assert.state(bannedHost != null, "spring.http.client.dns.banned property must not be null");
-		return new BannedHostDnsResolver(bannedHost);
-	}
-
-	@Bean
-	@ConditionalOnMissingBean
-	ClientHttpRequestFactorySettings clientHttpRequestFactorySettings(
-			ObjectProvider<BannedHostDnsResolver> bannedHostDnsResolver) {
-		return this.factories.settings(bannedHostDnsResolver.getIfAvailable());
+		if (bannedHost != null) {
+			settings = settings.withBannedHost(bannedHost);
+		}
+		return settings;
 	}
 
 }

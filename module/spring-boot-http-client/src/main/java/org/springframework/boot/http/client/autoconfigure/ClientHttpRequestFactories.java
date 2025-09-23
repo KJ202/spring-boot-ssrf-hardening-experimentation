@@ -61,11 +61,6 @@ public final class ClientHttpRequestFactories {
 
 	@SuppressWarnings("NullAway") // Lambda isn't detected with the correct nullability
 	public ClientHttpRequestFactorySettings settings() {
-		return settings(null);
-	}
-
-	@SuppressWarnings("NullAway") // Lambda isn't detected with the correct nullability
-	public ClientHttpRequestFactorySettings settings(@Nullable BannedHostDnsResolver bannedHostDnsResolver) {
 		HttpRedirects redirects = getProperty(AbstractHttpRequestFactoryProperties::getRedirects);
 		Duration connectTimeout = getProperty(AbstractHttpRequestFactoryProperties::getConnectTimeout);
 		Duration readTimeout = getProperty(AbstractHttpRequestFactoryProperties::getReadTimeout);
@@ -73,8 +68,7 @@ public final class ClientHttpRequestFactories {
 				StringUtils::hasLength);
 		SslBundle sslBundle = (StringUtils.hasLength(sslBundleName))
 				? this.sslBundles.getObject().getBundle(sslBundleName) : null;
-		return new ClientHttpRequestFactorySettings(redirects, connectTimeout, readTimeout, sslBundle,
-				bannedHostDnsResolver);
+		return new ClientHttpRequestFactorySettings(redirects, connectTimeout, readTimeout, sslBundle);
 	}
 
 	@SuppressWarnings("NullAway") // Lambda isn't detected with the correct nullability
