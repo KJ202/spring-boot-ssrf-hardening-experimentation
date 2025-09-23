@@ -106,6 +106,9 @@ public final class JettyClientHttpRequestFactoryBuilder
 	@Override
 	protected JettyClientHttpRequestFactory createClientHttpRequestFactory(ClientHttpRequestFactorySettings settings) {
 		HttpClient httpClient = this.httpClientBuilder.build(asHttpClientSettings(settings.withTimeouts(null, null)));
+		if (settings.bannedHost() != null) {
+			httpClient.setSocketAddressResolver(new BannedHostSocketAddressResolver(settings.bannedHost()));
+		}
 		JettyClientHttpRequestFactory requestFactory = new JettyClientHttpRequestFactory(httpClient);
 		PropertyMapper map = PropertyMapper.get().alwaysApplyingWhenNonNull();
 		map.from(settings::connectTimeout).asInt(Duration::toMillis).to(requestFactory::setConnectTimeout);

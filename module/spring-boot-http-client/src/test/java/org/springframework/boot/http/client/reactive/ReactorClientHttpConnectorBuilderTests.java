@@ -27,8 +27,11 @@ import reactor.netty.http.client.HttpClient;
 
 import org.springframework.boot.http.client.ReactorHttpClientBuilder;
 import org.springframework.http.client.ReactorResourceFactory;
+import org.springframework.http.client.reactive.ClientHttpConnector;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientRequestException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.then;
@@ -96,6 +99,19 @@ class ReactorClientHttpConnectorBuilderTests
 		return (int) ((HttpClient) ReflectionTestUtils.getField(connector, "httpClient")).configuration()
 			.responseTimeout()
 			.toMillis();
+	}
+
+	@Test
+	void withBannedHosts() {
+		ClientHttpConnector connector = ClientHttpConnectorBuilder.reactor().withBannedHosts("example.com").build();
+		WebClient webClient = WebClient.builder().clientConnector(connector).build();
+		try {
+			webClient.get().uri("https://example.com").retrieve().toBodilessEntity().block();
+		}
+		catch (Exception ex) {
+			System.out.println(ex.getClass().getName());
+			assertThat(ex).isInstanceOf(WebClientRequestException.class);
+		}
 	}
 
 }

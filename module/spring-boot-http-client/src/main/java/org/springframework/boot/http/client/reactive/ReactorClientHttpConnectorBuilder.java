@@ -18,6 +18,7 @@ package org.springframework.boot.http.client.reactive;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
@@ -37,8 +38,7 @@ import org.springframework.util.ClassUtils;
  * @author Phillip Webb
  * @since 3.5.0
  */
-public final class ReactorClientHttpConnectorBuilder
-		extends AbstractClientHttpConnectorBuilder<ReactorClientHttpConnector> {
+public class ReactorClientHttpConnectorBuilder extends AbstractClientHttpConnectorBuilder<ReactorClientHttpConnector> {
 
 	private final ReactorHttpClientBuilder httpClientBuilder;
 
@@ -99,8 +99,40 @@ public final class ReactorClientHttpConnectorBuilder
 				this.httpClientBuilder.withHttpClientCustomizer(httpClientCustomizer));
 	}
 
+	/**
+	 * Return a new {@link ReactorClientHttpConnectorBuilder} that will block the given
+	 * hosts from being resolved.
+	 * @param hosts the hosts to block
+	 * @return a new {@link ReactorClientHttpConnectorBuilder} instance
+	 */
+	public ReactorClientHttpConnectorBuilder withBannedHosts(String... hosts) {
+		return withBannedHosts(Set.of(hosts));
+	}
+
+	/**
+	 * Return a new {@link ReactorClientHttpConnectorBuilder} that will block the given
+	 * hosts from being resolved.
+	 * @param hosts the hosts to block
+	 * @return a new {@link ReactorClientHttpConnectorBuilder} instance
+	 */
+	public ReactorClientHttpConnectorBuilder withBannedHosts(Set<String> hosts) {
+		return new ReactorClientHttpConnectorBuilder(getCustomizers(), this.httpClientBuilder) {
+
+			@Override
+			protected ReactorClientHttpConnector createClientHttpConnector(ClientHttpConnectorSettings settings) {
+				return super.createClientHttpConnector(settings.withBannedHosts(hosts));
+			}
+
+		};
+	}
+
 	@Override
 	protected ReactorClientHttpConnector createClientHttpConnector(ClientHttpConnectorSettings settings) {
+		Set<String> bannedHosts = settings.bannedHosts();
+		if (bannedHosts != null && !bannedHosts.isEmpty()) {
+			this.httpClientBuilder.withHttpClientCustomizer((httpClient) -> httpClient
+				.resolvedAddressesSelector(new NettyHttpClientAddressSelector(bannedHosts)));
+		}
 		HttpClient httpClient = this.httpClientBuilder.build(asHttpClientSettings(settings));
 		return new ReactorClientHttpConnector(httpClient);
 	}

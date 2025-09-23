@@ -17,6 +17,7 @@
 package org.springframework.boot.http.client.reactive;
 
 import java.time.Duration;
+import java.util.Set;
 
 import org.jspecify.annotations.Nullable;
 
@@ -32,21 +33,24 @@ import org.springframework.http.client.reactive.ClientHttpConnector;
  * @param connectTimeout the connect timeout
  * @param readTimeout the read timeout
  * @param sslBundle the SSL bundle providing SSL configuration
+ * @param bannedHosts A set of hosts that should not be resolved
  * @author Phillip Webb
  * @since 3.5.0
  * @see ClientHttpConnectorBuilder
  */
 public record ClientHttpConnectorSettings(HttpRedirects redirects, @Nullable Duration connectTimeout,
-		@Nullable Duration readTimeout, @Nullable SslBundle sslBundle) {
+		@Nullable Duration readTimeout, @Nullable SslBundle sslBundle, @Nullable Set<String> bannedHosts) {
 
-	private static final ClientHttpConnectorSettings defaults = new ClientHttpConnectorSettings(null, null, null, null);
+	private static final ClientHttpConnectorSettings defaults = new ClientHttpConnectorSettings(null, null, null, null,
+			null);
 
 	public ClientHttpConnectorSettings(@Nullable HttpRedirects redirects, @Nullable Duration connectTimeout,
-			@Nullable Duration readTimeout, @Nullable SslBundle sslBundle) {
+			@Nullable Duration readTimeout, @Nullable SslBundle sslBundle, @Nullable Set<String> bannedHosts) {
 		this.redirects = (redirects != null) ? redirects : HttpRedirects.FOLLOW_WHEN_POSSIBLE;
 		this.connectTimeout = connectTimeout;
 		this.readTimeout = readTimeout;
 		this.sslBundle = sslBundle;
+		this.bannedHosts = bannedHosts;
 	}
 
 	/**
@@ -56,7 +60,8 @@ public record ClientHttpConnectorSettings(HttpRedirects redirects, @Nullable Dur
 	 * @return a new {@link ClientHttpConnectorSettings} instance
 	 */
 	public ClientHttpConnectorSettings withConnectTimeout(@Nullable Duration connectTimeout) {
-		return new ClientHttpConnectorSettings(this.redirects, connectTimeout, this.readTimeout, this.sslBundle);
+		return new ClientHttpConnectorSettings(this.redirects, connectTimeout, this.readTimeout, this.sslBundle,
+				this.bannedHosts);
 	}
 
 	/**
@@ -66,7 +71,8 @@ public record ClientHttpConnectorSettings(HttpRedirects redirects, @Nullable Dur
 	 * @return a new {@link ClientHttpConnectorSettings} instance
 	 */
 	public ClientHttpConnectorSettings withReadTimeout(@Nullable Duration readTimeout) {
-		return new ClientHttpConnectorSettings(this.redirects, this.connectTimeout, readTimeout, this.sslBundle);
+		return new ClientHttpConnectorSettings(this.redirects, this.connectTimeout, readTimeout, this.sslBundle,
+				this.bannedHosts);
 	}
 
 	/**
@@ -77,7 +83,8 @@ public record ClientHttpConnectorSettings(HttpRedirects redirects, @Nullable Dur
 	 * @return a new {@link ClientHttpConnectorSettings} instance
 	 */
 	public ClientHttpConnectorSettings withTimeouts(@Nullable Duration connectTimeout, @Nullable Duration readTimeout) {
-		return new ClientHttpConnectorSettings(this.redirects, connectTimeout, readTimeout, this.sslBundle);
+		return new ClientHttpConnectorSettings(this.redirects, connectTimeout, readTimeout, this.sslBundle,
+				this.bannedHosts);
 	}
 
 	/**
@@ -87,7 +94,8 @@ public record ClientHttpConnectorSettings(HttpRedirects redirects, @Nullable Dur
 	 * @return a new {@link ClientHttpConnectorSettings} instance
 	 */
 	public ClientHttpConnectorSettings withSslBundle(@Nullable SslBundle sslBundle) {
-		return new ClientHttpConnectorSettings(this.redirects, this.connectTimeout, this.readTimeout, sslBundle);
+		return new ClientHttpConnectorSettings(this.redirects, this.connectTimeout, this.readTimeout, sslBundle,
+				this.bannedHosts);
 	}
 
 	/**
@@ -97,7 +105,19 @@ public record ClientHttpConnectorSettings(HttpRedirects redirects, @Nullable Dur
 	 * @return a new {@link ClientHttpConnectorSettings} instance
 	 */
 	public ClientHttpConnectorSettings withRedirects(@Nullable HttpRedirects redirects) {
-		return new ClientHttpConnectorSettings(redirects, this.connectTimeout, this.readTimeout, this.sslBundle);
+		return new ClientHttpConnectorSettings(redirects, this.connectTimeout, this.readTimeout, this.sslBundle,
+				this.bannedHosts);
+	}
+
+	/**
+	 * Return a new {@link ClientHttpConnectorSettings} instance with an updated set of
+	 * banned hosts.
+	 * @param bannedHosts the new set of banned hosts
+	 * @return a new {@link ClientHttpConnectorSettings} instance
+	 */
+	public ClientHttpConnectorSettings withBannedHosts(@Nullable Set<String> bannedHosts) {
+		return new ClientHttpConnectorSettings(this.redirects, this.connectTimeout, this.readTimeout, this.sslBundle,
+				bannedHosts);
 	}
 
 	/**

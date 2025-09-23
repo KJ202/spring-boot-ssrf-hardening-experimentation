@@ -24,6 +24,7 @@ import java.util.function.Predicate;
 import org.jspecify.annotations.Nullable;
 
 import org.springframework.beans.factory.ObjectFactory;
+import org.springframework.boot.http.client.BannedHostDnsResolver;
 import org.springframework.boot.http.client.ClientHttpRequestFactoryBuilder;
 import org.springframework.boot.http.client.ClientHttpRequestFactorySettings;
 import org.springframework.boot.http.client.HttpRedirects;

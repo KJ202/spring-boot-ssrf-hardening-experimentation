@@ -31,6 +31,7 @@ import org.springframework.http.client.ClientHttpRequestFactory;
  * @param connectTimeout the connect timeout
  * @param readTimeout the read timeout
  * @param sslBundle the SSL bundle providing SSL configuration
+ * @param bannedHost the banned host
  * @author Andy Wilkinson
  * @author Phillip Webb
  * @author Scott Frederick
@@ -38,17 +39,23 @@ import org.springframework.http.client.ClientHttpRequestFactory;
  * @see ClientHttpRequestFactoryBuilder
  */
 public record ClientHttpRequestFactorySettings(HttpRedirects redirects, @Nullable Duration connectTimeout,
-		@Nullable Duration readTimeout, @Nullable SslBundle sslBundle) {
+		@Nullable Duration readTimeout, @Nullable SslBundle sslBundle, @Nullable String bannedHost) {
 
 	private static final ClientHttpRequestFactorySettings defaults = new ClientHttpRequestFactorySettings(null, null,
-			null, null);
+			null, null, null);
 
 	public ClientHttpRequestFactorySettings(@Nullable HttpRedirects redirects, @Nullable Duration connectTimeout,
 			@Nullable Duration readTimeout, @Nullable SslBundle sslBundle) {
+		this(redirects, connectTimeout, readTimeout, sslBundle, null);
+	}
+
+	public ClientHttpRequestFactorySettings(@Nullable HttpRedirects redirects, @Nullable Duration connectTimeout,
+			@Nullable Duration readTimeout, @Nullable SslBundle sslBundle, @Nullable String bannedHost) {
 		this.redirects = (redirects != null) ? redirects : HttpRedirects.FOLLOW_WHEN_POSSIBLE;
 		this.connectTimeout = connectTimeout;
 		this.readTimeout = readTimeout;
 		this.sslBundle = sslBundle;
+		this.bannedHost = bannedHost;
 	}
 
 	/**
@@ -58,7 +65,8 @@ public record ClientHttpRequestFactorySettings(HttpRedirects redirects, @Nullabl
 	 * @return a new {@link ClientHttpRequestFactorySettings} instance
 	 */
 	public ClientHttpRequestFactorySettings withConnectTimeout(@Nullable Duration connectTimeout) {
-		return new ClientHttpRequestFactorySettings(this.redirects, connectTimeout, this.readTimeout, this.sslBundle);
+		return new ClientHttpRequestFactorySettings(this.redirects, connectTimeout, this.readTimeout, this.sslBundle,
+				this.bannedHost);
 	}
 
 	/**
@@ -68,7 +76,8 @@ public record ClientHttpRequestFactorySettings(HttpRedirects redirects, @Nullabl
 	 * @return a new {@link ClientHttpRequestFactorySettings} instance
 	 */
 	public ClientHttpRequestFactorySettings withReadTimeout(@Nullable Duration readTimeout) {
-		return new ClientHttpRequestFactorySettings(this.redirects, this.connectTimeout, readTimeout, this.sslBundle);
+		return new ClientHttpRequestFactorySettings(this.redirects, this.connectTimeout, readTimeout, this.sslBundle,
+				this.bannedHost);
 	}
 
 	/**
@@ -80,7 +89,8 @@ public record ClientHttpRequestFactorySettings(HttpRedirects redirects, @Nullabl
 	 */
 	public ClientHttpRequestFactorySettings withTimeouts(@Nullable Duration connectTimeout,
 			@Nullable Duration readTimeout) {
-		return new ClientHttpRequestFactorySettings(this.redirects, connectTimeout, readTimeout, this.sslBundle);
+		return new ClientHttpRequestFactorySettings(this.redirects, connectTimeout, readTimeout, this.sslBundle,
+				this.bannedHost);
 	}
 
 	/**
@@ -90,7 +100,8 @@ public record ClientHttpRequestFactorySettings(HttpRedirects redirects, @Nullabl
 	 * @return a new {@link ClientHttpRequestFactorySettings} instance
 	 */
 	public ClientHttpRequestFactorySettings withSslBundle(@Nullable SslBundle sslBundle) {
-		return new ClientHttpRequestFactorySettings(this.redirects, this.connectTimeout, this.readTimeout, sslBundle);
+		return new ClientHttpRequestFactorySettings(this.redirects, this.connectTimeout, this.readTimeout, sslBundle,
+				this.bannedHost);
 	}
 
 	/**
@@ -100,7 +111,19 @@ public record ClientHttpRequestFactorySettings(HttpRedirects redirects, @Nullabl
 	 * @return a new {@link ClientHttpRequestFactorySettings} instance
 	 */
 	public ClientHttpRequestFactorySettings withRedirects(@Nullable HttpRedirects redirects) {
-		return new ClientHttpRequestFactorySettings(redirects, this.connectTimeout, this.readTimeout, this.sslBundle);
+		return new ClientHttpRequestFactorySettings(redirects, this.connectTimeout, this.readTimeout, this.sslBundle,
+				this.bannedHost);
+	}
+
+	/**
+	 * Return a new {@link ClientHttpRequestFactorySettings} instance with an updated
+	 * banned host setting.
+	 * @param host the banned host
+	 * @return a new {@link ClientHttpRequestFactorySettings} instance
+	 */
+	public ClientHttpRequestFactorySettings withBannedHost(String host) {
+		return new ClientHttpRequestFactorySettings(this.redirects, this.connectTimeout, this.readTimeout,
+				this.sslBundle, host);
 	}
 
 	/**

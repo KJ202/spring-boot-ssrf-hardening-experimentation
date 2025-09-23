@@ -23,6 +23,10 @@ import org.junit.jupiter.api.Test;
 
 import org.springframework.http.client.JettyClientHttpRequestFactory;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.web.client.ResourceAccessException;
+import org.springframework.web.client.RestTemplate;
+
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 /**
  * Tests for {@link JettyClientHttpRequestFactoryBuilder} and
@@ -35,6 +39,16 @@ class JettyClientHttpRequestFactoryBuilderTests
 
 	JettyClientHttpRequestFactoryBuilderTests() {
 		super(JettyClientHttpRequestFactory.class, ClientHttpRequestFactoryBuilder.jetty());
+	}
+
+	@Test
+	void buildClientWithBannedHost() {
+		JettyClientHttpRequestFactory requestFactory = ClientHttpRequestFactoryBuilder.jetty()
+			.build(ClientHttpRequestFactorySettings.defaults().withBannedHost("example.com"));
+		RestTemplate restTemplate = new RestTemplate(requestFactory);
+		assertThatExceptionOfType(ResourceAccessException.class)
+			.isThrownBy(() -> restTemplate.getForEntity("https://example.com", String.class))
+			.withRootCauseInstanceOf(java.net.UnknownHostException.class);
 	}
 
 	@Test
