@@ -18,8 +18,6 @@ package org.springframework.boot.http.client;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.Arrays;
-import java.util.stream.Stream;
 
 import org.apache.hc.client5.http.DnsResolver;
 import org.apache.hc.client5.http.SystemDefaultDnsResolver;
@@ -36,7 +34,7 @@ public class BannedHostDnsResolver implements DnsResolver {
 
 	@Override
 	public InetAddress[] resolve(String host) throws UnknownHostException {
-		if (host.equals(bannedHost)) {
+		if (host.equals(this.bannedHost)) {
 			throw new UnknownHostException(host);
 		}
 		return this.defaultDnsResolver.resolve(host);
@@ -46,4 +44,5 @@ public class BannedHostDnsResolver implements DnsResolver {
 	public String resolveCanonicalHostname(String host) throws UnknownHostException {
 		return this.defaultDnsResolver.resolveCanonicalHostname(host);
 	}
+
 }

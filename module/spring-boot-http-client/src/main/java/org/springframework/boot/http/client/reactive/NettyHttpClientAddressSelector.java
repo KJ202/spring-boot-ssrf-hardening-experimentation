@@ -50,10 +50,12 @@ class NettyHttpClientAddressSelector implements ClientTransport.ResolvedAddressS
 	}
 
 	@Override
-	public List<? extends SocketAddress> apply(ClientTransportConfig<?> clientTransportConfig, List<? extends SocketAddress> resolvedAddresses) {
+	public List<? extends SocketAddress> apply(ClientTransportConfig<?> clientTransportConfig,
+			List<? extends SocketAddress> resolvedAddresses) {
 		if (resolvedAddresses.isEmpty()) {
 			return resolvedAddresses;
 		}
 		return resolvedAddresses.stream().filter(this::isAllowed).toList();
 	}
+
 }

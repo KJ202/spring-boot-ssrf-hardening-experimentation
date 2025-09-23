@@ -47,7 +47,7 @@ class JettyClientHttpRequestFactoryBuilderTests
 			.build(ClientHttpRequestFactorySettings.defaults().withBannedHost("example.com"));
 		RestTemplate restTemplate = new RestTemplate(requestFactory);
 		assertThatExceptionOfType(ResourceAccessException.class)
-			.isThrownBy(() -> restTemplate.getForEntity("http://example.com", String.class))
+			.isThrownBy(() -> restTemplate.getForEntity("https://example.com", String.class))
 			.withRootCauseInstanceOf(java.net.UnknownHostException.class);
 	}
 

@@ -35,7 +35,8 @@ import org.springframework.boot.ssl.SslBundle;
  * @since 3.5.0
  */
 public record HttpClientSettings(HttpRedirects redirects, @Nullable Duration connectTimeout,
-		@Nullable Duration readTimeout, @Nullable SslBundle sslBundle, @Nullable BannedHostDnsResolver bannedHostDnsResolver) {
+		@Nullable Duration readTimeout, @Nullable SslBundle sslBundle,
+		@Nullable BannedHostDnsResolver bannedHostDnsResolver) {
 
 	static final HttpClientSettings DEFAULTS = new HttpClientSettings(null, null, null, null, null);
 
@@ -45,7 +46,8 @@ public record HttpClientSettings(HttpRedirects redirects, @Nullable Duration con
 	}
 
 	public HttpClientSettings(@Nullable HttpRedirects redirects, @Nullable Duration connectTimeout,
-			@Nullable Duration readTimeout, @Nullable SslBundle sslBundle, @Nullable BannedHostDnsResolver bannedHostDnsResolver) {
+			@Nullable Duration readTimeout, @Nullable SslBundle sslBundle,
+			@Nullable BannedHostDnsResolver bannedHostDnsResolver) {
 		this.redirects = (redirects != null) ? redirects : HttpRedirects.FOLLOW_WHEN_POSSIBLE;
 		this.connectTimeout = connectTimeout;
 		this.readTimeout = readTimeout;

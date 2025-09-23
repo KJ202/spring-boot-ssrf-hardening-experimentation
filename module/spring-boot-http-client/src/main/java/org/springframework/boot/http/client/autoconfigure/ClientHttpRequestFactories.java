@@ -24,10 +24,10 @@ import java.util.function.Predicate;
 import org.jspecify.annotations.Nullable;
 
 import org.springframework.beans.factory.ObjectFactory;
+import org.springframework.boot.http.client.BannedHostDnsResolver;
 import org.springframework.boot.http.client.ClientHttpRequestFactoryBuilder;
 import org.springframework.boot.http.client.ClientHttpRequestFactorySettings;
 import org.springframework.boot.http.client.HttpRedirects;
-import org.springframework.boot.http.client.BannedHostDnsResolver;
 import org.springframework.boot.http.client.autoconfigure.AbstractHttpRequestFactoryProperties.Factory;
 import org.springframework.boot.http.client.autoconfigure.AbstractHttpRequestFactoryProperties.Ssl;
 import org.springframework.boot.ssl.SslBundle;
@@ -73,7 +73,8 @@ public final class ClientHttpRequestFactories {
 				StringUtils::hasLength);
 		SslBundle sslBundle = (StringUtils.hasLength(sslBundleName))
 				? this.sslBundles.getObject().getBundle(sslBundleName) : null;
-		return new ClientHttpRequestFactorySettings(redirects, connectTimeout, readTimeout, sslBundle, bannedHostDnsResolver);
+		return new ClientHttpRequestFactorySettings(redirects, connectTimeout, readTimeout, sslBundle,
+				bannedHostDnsResolver);
 	}
 
 	@SuppressWarnings("NullAway") // Lambda isn't detected with the correct nullability

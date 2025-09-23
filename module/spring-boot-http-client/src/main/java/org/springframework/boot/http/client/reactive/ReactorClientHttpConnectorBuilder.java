@@ -38,8 +38,7 @@ import org.springframework.util.ClassUtils;
  * @author Phillip Webb
  * @since 3.5.0
  */
-public class ReactorClientHttpConnectorBuilder
-		extends AbstractClientHttpConnectorBuilder<ReactorClientHttpConnector> {
+public class ReactorClientHttpConnectorBuilder extends AbstractClientHttpConnectorBuilder<ReactorClientHttpConnector> {
 
 	private final ReactorHttpClientBuilder httpClientBuilder;
 
@@ -132,7 +131,7 @@ public class ReactorClientHttpConnectorBuilder
 		Set<String> bannedHosts = settings.bannedHosts();
 		if (bannedHosts != null && !bannedHosts.isEmpty()) {
 			this.httpClientBuilder.withHttpClientCustomizer((httpClient) -> httpClient
-					.resolvedAddressesSelector(new NettyHttpClientAddressSelector(bannedHosts)));
+				.resolvedAddressesSelector(new NettyHttpClientAddressSelector(bannedHosts)));
 		}
 		HttpClient httpClient = this.httpClientBuilder.build(asHttpClientSettings(settings));
 		return new ReactorClientHttpConnector(httpClient);

@@ -145,7 +145,8 @@ public final class HttpComponentsClientHttpRequestFactoryBuilder
 
 	HttpComponentsClientHttpRequestFactoryBuilder withDnsResolver(BannedHostDnsResolver dnsResolver) {
 		Assert.notNull(dnsResolver, "'dnsResolver' must not be null");
-		return withConnectionManagerCustomizer((connectionManagerBuilder) -> connectionManagerBuilder.setDnsResolver(dnsResolver));
+		return withConnectionManagerCustomizer(
+				(connectionManagerBuilder) -> connectionManagerBuilder.setDnsResolver(dnsResolver));
 	}
 
 	@Override
@@ -155,7 +156,8 @@ public final class HttpComponentsClientHttpRequestFactoryBuilder
 		if (settings.bannedHostDnsResolver() != null) {
 			builder = builder.withDnsResolver(settings.bannedHostDnsResolver());
 		}
-		HttpClient httpClient = builder.httpClientBuilder.build(asHttpClientSettings(settings.withConnectTimeout(null)));
+		HttpClient httpClient = builder.httpClientBuilder
+			.build(asHttpClientSettings(settings.withConnectTimeout(null)));
 		HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory(httpClient);
 		PropertyMapper map = PropertyMapper.get().alwaysApplyingWhenNonNull();
 		map.from(settings::connectTimeout).asInt(Duration::toMillis).to(factory::setConnectTimeout);

@@ -31,6 +31,7 @@ import org.springframework.http.client.ClientHttpRequestFactory;
  * @param connectTimeout the connect timeout
  * @param readTimeout the read timeout
  * @param sslBundle the SSL bundle providing SSL configuration
+ * @param bannedHostDnsResolver the banned host DNS resolver
  * @author Andy Wilkinson
  * @author Phillip Webb
  * @author Scott Frederick

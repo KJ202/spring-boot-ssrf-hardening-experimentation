@@ -100,12 +100,12 @@ class HttpComponentsClientHttpRequestFactoryBuilderTests
 	void withDnsResolverWhenHostIsBannedThenRequestFails() {
 		BannedHostDnsResolver dnsResolver = new BannedHostDnsResolver("example.com");
 		HttpComponentsClientHttpRequestFactory requestFactory = ClientHttpRequestFactoryBuilder.httpComponents()
-				.withDnsResolver(dnsResolver)
-				.build();
+			.withDnsResolver(dnsResolver)
+			.build();
 		RestTemplate restTemplate = new RestTemplate(requestFactory);
 		assertThatExceptionOfType(ResourceAccessException.class)
-				.isThrownBy(() -> restTemplate.getForEntity("http://example.com", String.class))
-				.withRootCauseInstanceOf(java.net.UnknownHostException.class);
+			.isThrownBy(() -> restTemplate.getForEntity("https://example.com", String.class))
+			.withRootCauseInstanceOf(java.net.UnknownHostException.class);
 	}
 
 	@Override
