@@ -171,7 +171,11 @@ public final class HttpComponentsClientHttpRequestFactoryBuilder
 
 	@Override
 	protected HttpComponentsClientHttpRequestFactory createClientHttpRequestFactory(HttpClientSettings settings) {
-		HttpClient httpClient = this.httpClientBuilder.build(settings);
+		HttpComponentsHttpClientBuilder builder = this.httpClientBuilder;
+		if (settings.dnsResolver() instanceof org.apache.hc.client5.http.DnsResolver dnsResolver) {
+			builder = builder.withDnsResolver(dnsResolver);
+		}
+		HttpClient httpClient = builder.build(settings);
 		return new HttpComponentsClientHttpRequestFactory(httpClient);
 	}
 

@@ -16,14 +16,22 @@
 
 package org.springframework.boot.http.client;
 
+import java.net.InetAddress;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.hc.client5.http.DnsResolver;
 import org.apache.hc.client5.http.HttpRoute;
 import org.apache.hc.client5.http.config.ConnectionConfig;
+import org.apache.hc.client5.http.classic.HttpClient;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.client5.http.config.RequestConfig;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
+import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
 import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder;
 import org.apache.hc.core5.function.Resolver;
 import org.apache.hc.core5.http.io.SocketConfig;
@@ -32,10 +40,19 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.http.client.HttpComponentsHttpClientBuilder.TlsSocketStrategyFactory;
 import org.springframework.boot.ssl.SslBundle;
 import org.springframework.boot.testsupport.classpath.resources.WithPackageResources;
+import org.springframework.boot.web.client.HttpComponentsDnsResolver;
+import org.springframework.boot.web.client.SecurityDnsHandler;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+
+import org.mockito.ArgumentCaptor;
 
 /**
  * Tests for {@link HttpComponentsClientHttpRequestFactoryBuilder} and
@@ -105,6 +122,26 @@ class HttpComponentsClientHttpRequestFactoryBuilderTests
 	@Override
 	protected long connectTimeout(HttpComponentsClientHttpRequestFactory requestFactory) {
 		return getConnectorConfig(requestFactory).getConnectTimeout().toMilliseconds();
+	@SuppressWarnings("deprecation")
+	void withDnsResolver() throws Exception {
+		DnsResolver dnsResolver = mock(DnsResolver.class);
+		ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
+		given(dnsResolver.resolve(captor.capture())).willReturn(new InetAddress[] { InetAddress.getByName("127.0.0.1") });
+		ClientHttpRequestFactorySettings settings = ClientHttpRequestFactorySettings.defaults().withDnsResolver(dnsResolver);
+		HttpComponentsClientHttpRequestFactory requestFactory = ClientHttpRequestFactoryBuilder.httpComponents().build(settings);
+		HttpClient httpClient = requestFactory.getHttpClient();
+		try (CloseableHttpResponse response = (CloseableHttpResponse) httpClient.execute(new HttpGet("http://localhost/test"))) {
+			assertThat(captor.getValue()).isEqualTo("localhost");
+		}
+		catch (Exception ex) {
+			// Ignore
+		}
+	}
+
+
+	@Override
+	protected long connectTimeout(HttpComponentsClientHttpRequestFactory requestFactory) {
+		return (long) ReflectionTestUtils.getField(requestFactory, "connectTimeout");
 	}
 
 	@Override
