@@ -132,7 +132,11 @@ public final class JettyClientHttpRequestFactoryBuilder
 
 	@Override
 	protected JettyClientHttpRequestFactory createClientHttpRequestFactory(HttpClientSettings settings) {
-		HttpClient httpClient = this.httpClientBuilder.build(settings.withTimeouts(null, null));
+		JettyHttpClientBuilder builder = this.httpClientBuilder;
+		if (settings.dnsResolver() instanceof org.eclipse.jetty.util.SocketAddressResolver dnsResolver) {
+			builder = builder.withDnsResolver(dnsResolver);
+		}
+		HttpClient httpClient = builder.build(settings.withTimeouts(null, null));
 		JettyClientHttpRequestFactory requestFactory = new JettyClientHttpRequestFactory(httpClient);
 		PropertyMapper map = PropertyMapper.get();
 		map.from(settings::connectTimeout).asInt(Duration::toMillis).to(requestFactory::setConnectTimeout);
