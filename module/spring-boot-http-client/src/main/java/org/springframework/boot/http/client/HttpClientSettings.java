@@ -34,9 +34,9 @@ import org.springframework.boot.ssl.SslBundle;
  * @since 3.5.0
  */
 public record HttpClientSettings(@Nullable HttpRedirects redirects, @Nullable Duration connectTimeout,
-		@Nullable Duration readTimeout, @Nullable SslBundle sslBundle) {
+		@Nullable Duration readTimeout, @Nullable SslBundle sslBundle, @Nullable Object dnsResolver) {
 
-	private static final HttpClientSettings defaults = new HttpClientSettings(null, null, null, null);
+	private static final HttpClientSettings defaults = new HttpClientSettings(null, null, null, null, null);
 
 	/**
 	 * Return a new {@link HttpClientSettings} instance with an updated connect timeout
@@ -46,7 +46,7 @@ public record HttpClientSettings(@Nullable HttpRedirects redirects, @Nullable Du
 	 * @since 4.0.0
 	 */
 	public HttpClientSettings withConnectTimeout(@Nullable Duration connectTimeout) {
-		return new HttpClientSettings(this.redirects, connectTimeout, this.readTimeout, this.sslBundle);
+		return new HttpClientSettings(this.redirects, connectTimeout, this.readTimeout, this.sslBundle, this.dnsResolver);
 	}
 
 	/**
@@ -57,7 +57,7 @@ public record HttpClientSettings(@Nullable HttpRedirects redirects, @Nullable Du
 	 * @since 4.0.0
 	 */
 	public HttpClientSettings withReadTimeout(@Nullable Duration readTimeout) {
-		return new HttpClientSettings(this.redirects, this.connectTimeout, readTimeout, this.sslBundle);
+		return new HttpClientSettings(this.redirects, this.connectTimeout, readTimeout, this.sslBundle, this.dnsResolver);
 	}
 
 	/**
@@ -69,7 +69,7 @@ public record HttpClientSettings(@Nullable HttpRedirects redirects, @Nullable Du
 	 * @since 4.0.0
 	 */
 	public HttpClientSettings withTimeouts(@Nullable Duration connectTimeout, @Nullable Duration readTimeout) {
-		return new HttpClientSettings(this.redirects, connectTimeout, readTimeout, this.sslBundle);
+		return new HttpClientSettings(this.redirects, connectTimeout, readTimeout, this.sslBundle, this.dnsResolver);
 	}
 
 	/**
@@ -80,7 +80,19 @@ public record HttpClientSettings(@Nullable HttpRedirects redirects, @Nullable Du
 	 * @since 4.0.0
 	 */
 	public HttpClientSettings withSslBundle(@Nullable SslBundle sslBundle) {
-		return new HttpClientSettings(this.redirects, this.connectTimeout, this.readTimeout, sslBundle);
+		return new HttpClientSettings(this.redirects, this.connectTimeout, this.readTimeout, sslBundle, this.dnsResolver);
+	}
+
+	/**
+	 * Return a new {@link HttpClientSettings} instance with an updated DNS resolver
+	 * setting.
+	 * @param dnsResolver the new DNS resolver setting
+	 * @return a new {@link HttpClientSettings} instance
+	 * @since 4.0.0
+	 */
+	public HttpClientSettings withDnsResolver(@Nullable Object dnsResolver) {
+		return new HttpClientSettings(this.redirects, this.connectTimeout, this.readTimeout,
+				this.sslBundle, dnsResolver);
 	}
 
 	/**
@@ -90,7 +102,7 @@ public record HttpClientSettings(@Nullable HttpRedirects redirects, @Nullable Du
 	 * @since 4.0.0
 	 */
 	public HttpClientSettings withRedirects(@Nullable HttpRedirects redirects) {
-		return new HttpClientSettings(redirects, this.connectTimeout, this.readTimeout, this.sslBundle);
+		return new HttpClientSettings(redirects, this.connectTimeout, this.readTimeout, this.sslBundle, this.dnsResolver);
 	}
 
 	/**
@@ -108,7 +120,8 @@ public record HttpClientSettings(@Nullable HttpRedirects redirects, @Nullable Du
 		Duration connectTimeout = (connectTimeout() != null) ? connectTimeout() : other.connectTimeout();
 		Duration readTimeout = (readTimeout() != null) ? readTimeout() : other.readTimeout();
 		SslBundle sslBundle = (sslBundle() != null) ? sslBundle() : other.sslBundle();
-		return new HttpClientSettings(redirects, connectTimeout, readTimeout, sslBundle);
+		Object dnsResolver = (dnsResolver() != null) ? dnsResolver() : other.dnsResolver();
+		return new HttpClientSettings(redirects, connectTimeout, readTimeout, sslBundle, dnsResolver);
 	}
 
 	/**
