@@ -50,6 +50,9 @@ public class HttpComponentsDnsResolver implements DnsResolver {
 	public InetAddress[] resolve(String host) throws UnknownHostException {
 		InetAddress[] addresses = this.delegate.resolve(host);
 		List<InetAddress> inetAddresses = this.securityDnsHandler.handleAddresses(Arrays.asList(addresses));
+		if (inetAddresses.isEmpty()) {
+			throw new UnknownHostException("No allowed IP addresses found for " + host);
+		}
 		return inetAddresses.toArray(new InetAddress[0]);
 	}
 

@@ -1,0 +1,65 @@
+/*
+ * Copyright 2012-present the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.springframework.boot.http.client;
+
+import java.net.URI;
+import java.net.UnknownHostException;
+
+import org.apache.hc.client5.http.DnsResolver;
+import org.junit.jupiter.api.Test;
+
+import org.springframework.boot.web.client.HttpComponentsDnsResolver;
+import org.springframework.boot.web.client.SecurityDnsHandler;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.client.ClientHttpRequestFactory;
+
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+
+/**
+ * Usage example for SSRF hardening with Apache HttpComponents.
+ */
+class SsrfHardeningUsageExampleTests {
+
+	@Test
+	void apacheHttpClientWithSsrfHardening() {
+		// 1. Create a SecurityDnsHandler with your desired rules.
+		// In this example, we block all internal IPs (like 127.0.0.1, 192.168.x.x, etc.).
+		SecurityDnsHandler securityDnsHandler = SecurityDnsHandler.builder()
+			.blockAllInternal(true) // Block access to internal networks
+			.build();
+
+		// 2. Create a DnsResolver that uses the SecurityDnsHandler.
+		// This adapter bridges the Spring Boot security handler to the Apache HttpClient API.
+		DnsResolver dnsResolver = new HttpComponentsDnsResolver(securityDnsHandler);
+
+		// 3. Configure HttpClientSettings with the custom DnsResolver.
+		HttpClientSettings settings = HttpClientSettings.defaults().withDnsResolver(dnsResolver);
+
+		// 4. Build the ClientHttpRequestFactory using the settings.
+		ClientHttpRequestFactory requestFactory = ClientHttpRequestFactoryBuilder.httpComponents().build(settings);
+
+		// 5. Use the factory to create requests.
+		// Attempts to access blocked IPs will fail during DNS resolution.
+		assertThatExceptionOfType(UnknownHostException.class).isThrownBy(() -> {
+			requestFactory.createRequest(new URI("http://127.0.0.1"), HttpMethod.GET).execute();
+		});
+
+		// You can also demonstrate that external IPs are allowed (if you have network access),
+		// or verify that the filter logic is being applied correctly.
+	}
+
+}
