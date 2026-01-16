@@ -20,9 +20,11 @@ import java.net.URI;
 import java.net.UnknownHostException;
 
 import org.apache.hc.client5.http.DnsResolver;
+import org.eclipse.jetty.util.SocketAddressResolver;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.boot.web.client.HttpComponentsDnsResolver;
+import org.springframework.boot.web.client.JettyDnsResolver;
 import org.springframework.boot.web.client.SecurityDnsHandler;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.client.ClientHttpRequestFactory;
@@ -30,7 +32,7 @@ import org.springframework.http.client.ClientHttpRequestFactory;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 /**
- * Usage example for SSRF hardening with Apache HttpComponents.
+ * Usage example for SSRF hardening with Apache HttpComponents, Jetty, and Reactor Netty.
  */
 class SsrfHardeningUsageExampleTests {
 
@@ -57,9 +59,48 @@ class SsrfHardeningUsageExampleTests {
 		assertThatExceptionOfType(UnknownHostException.class).isThrownBy(() -> {
 			requestFactory.createRequest(new URI("http://127.0.0.1"), HttpMethod.GET).execute();
 		});
+	}
 
-		// You can also demonstrate that external IPs are allowed (if you have network access),
-		// or verify that the filter logic is being applied correctly.
+	@Test
+	void jettyHttpClientWithSsrfHardening() {
+		// 1. Create a SecurityDnsHandler with your desired rules.
+		SecurityDnsHandler securityDnsHandler = SecurityDnsHandler.builder()
+			.blockAllInternal(true)
+			.build();
+
+		// 2. Create a SocketAddressResolver that uses the SecurityDnsHandler.
+		SocketAddressResolver dnsResolver = new JettyDnsResolver(securityDnsHandler);
+
+		// 3. Configure HttpClientSettings with the custom DnsResolver.
+		HttpClientSettings settings = HttpClientSettings.defaults().withDnsResolver(dnsResolver);
+
+		// 4. Build the ClientHttpRequestFactory using the settings.
+		ClientHttpRequestFactory requestFactory = ClientHttpRequestFactoryBuilder.jetty().build(settings);
+
+		// 5. Use the factory to create requests.
+		assertThatExceptionOfType(UnknownHostException.class).isThrownBy(() -> {
+			requestFactory.createRequest(new URI("http://127.0.0.1"), HttpMethod.GET).execute();
+		});
+	}
+
+	@Test
+	void reactorNettyHttpClientWithSsrfHardening() {
+		// 1. Create a SecurityDnsHandler with your desired rules.
+		SecurityDnsHandler securityDnsHandler = SecurityDnsHandler.builder()
+			.blockAllInternal(true)
+			.build();
+
+		// 2. Build the ClientHttpRequestFactory using a customizer to set the resolvedAddressesSelector.
+		ClientHttpRequestFactory requestFactory = ClientHttpRequestFactoryBuilder.reactor()
+			.withHttpClientCustomizer((httpClient) -> httpClient.resolvedAddressesSelector(
+				(config, resolvedAddresses) -> securityDnsHandler.handleSocketAddresses(resolvedAddresses)
+			))
+			.build();
+
+		// 3. Use the factory to create requests.
+		assertThatExceptionOfType(Exception.class).isThrownBy(() -> {
+			requestFactory.createRequest(new URI("http://127.0.0.1"), HttpMethod.GET).execute();
+		});
 	}
 
 }
