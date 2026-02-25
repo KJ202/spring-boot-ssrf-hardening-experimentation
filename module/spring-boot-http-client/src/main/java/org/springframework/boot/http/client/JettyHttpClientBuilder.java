@@ -59,7 +59,8 @@ public final class JettyHttpClientBuilder {
 	private final @Nullable SocketAddressResolver dnsResolver;
 
 	public JettyHttpClientBuilder() {
-		this(Empty.consumer(), JettyHttpClientBuilder::createHttpClientTransport, Empty.consumer(), Empty.consumer(), null);
+		this(Empty.consumer(), JettyHttpClientBuilder::createHttpClientTransport, Empty.consumer(), Empty.consumer(),
+				null);
 	}
 
 	private JettyHttpClientBuilder(Consumer<HttpClient> customizer,
@@ -130,7 +131,8 @@ public final class JettyHttpClientBuilder {
 		Assert.notNull(clientConnectorCustomizerCustomizer, "'clientConnectorCustomizerCustomizer' must not be null");
 		return new JettyHttpClientBuilder(this.customizer, this.httpClientTransportFactory,
 				this.httpClientTransportCustomizer,
-				this.clientConnectorCustomizerCustomizer.andThen(clientConnectorCustomizerCustomizer), this.dnsResolver);
+				this.clientConnectorCustomizerCustomizer.andThen(clientConnectorCustomizerCustomizer),
+				this.dnsResolver);
 	}
 
 	/**

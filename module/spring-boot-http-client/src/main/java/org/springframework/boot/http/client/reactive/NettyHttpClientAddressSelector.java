@@ -22,7 +22,7 @@ import java.util.List;
 import reactor.netty.transport.ClientTransport;
 import reactor.netty.transport.ClientTransportConfig;
 
-import org.springframework.boot.web.client.SecurityDnsHandler;
+import org.springframework.security.web.util.matcher.InetAddressMatcher;
 import org.springframework.util.Assert;
 
 /**
@@ -34,11 +34,11 @@ import org.springframework.util.Assert;
  */
 class NettyHttpClientAddressSelector implements ClientTransport.ResolvedAddressSelector<ClientTransportConfig<?>> {
 
-	private final SecurityDnsHandler securityDnsHandler;
+	private final InetAddressMatcher inetAddressMatcher;
 
-	NettyHttpClientAddressSelector(SecurityDnsHandler securityDnsHandler) {
-		Assert.notNull(securityDnsHandler, "SecurityDnsHandler must not be null");
-		this.securityDnsHandler = securityDnsHandler;
+	NettyHttpClientAddressSelector(InetAddressMatcher inetAddressMatcher) {
+		Assert.notNull(inetAddressMatcher, "InetAddressMatcher must not be null");
+		this.inetAddressMatcher = inetAddressMatcher;
 	}
 
 	@Override
@@ -47,7 +47,18 @@ class NettyHttpClientAddressSelector implements ClientTransport.ResolvedAddressS
 		if (resolvedAddresses.isEmpty()) {
 			return resolvedAddresses;
 		}
-		return this.securityDnsHandler.handleSocketAddresses(resolvedAddresses);
+		List<SocketAddress> allowed = new java.util.ArrayList<>();
+		for (SocketAddress address : resolvedAddresses) {
+			if (address instanceof java.net.InetSocketAddress inetAddress) {
+				if (this.inetAddressMatcher.matches(inetAddress.getAddress())) {
+					allowed.add(address);
+				}
+			}
+			else {
+				allowed.add(address);
+			}
+		}
+		return allowed;
 	}
 
 }

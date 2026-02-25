@@ -106,7 +106,8 @@ public final class HttpComponentsHttpClientBuilder {
 		Assert.notNull(connectionManagerCustomizer, "'connectionManagerCustomizer' must not be null");
 		return new HttpComponentsHttpClientBuilder(this.customizer,
 				this.connectionManagerCustomizer.andThen(connectionManagerCustomizer), this.socketConfigCustomizer,
-				this.connectionConfigCustomizer, this.defaultRequestConfigCustomizer, this.tlsSocketStrategyFactory, this.dnsResolver);
+				this.connectionConfigCustomizer, this.defaultRequestConfigCustomizer, this.tlsSocketStrategyFactory,
+				this.dnsResolver);
 	}
 
 	/**
@@ -182,8 +183,8 @@ public final class HttpComponentsHttpClientBuilder {
 	public HttpComponentsHttpClientBuilder withDnsResolver(org.apache.hc.client5.http.DnsResolver dnsResolver) {
 		Assert.notNull(dnsResolver, "'dnsResolver' must not be null");
 		return new HttpComponentsHttpClientBuilder(this.customizer, this.connectionManagerCustomizer,
-				this.socketConfigCustomizer, this.connectionConfigCustomizer, this.defaultRequestConfigCustomizer, this.tlsSocketStrategyFactory,
-				dnsResolver);
+				this.socketConfigCustomizer, this.connectionConfigCustomizer, this.defaultRequestConfigCustomizer,
+				this.tlsSocketStrategyFactory, dnsResolver);
 	}
 
 	/**

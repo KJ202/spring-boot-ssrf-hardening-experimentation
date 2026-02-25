@@ -103,8 +103,7 @@ class JettyClientHttpRequestFactoryBuilderTests
 		}).given(dnsResolver).resolve(eq("localhost"), eq(80), any(), any());
 
 		// Build the request factory, injecting the mock DNS resolver into its settings.
-		HttpClientSettings settings = HttpClientSettings.defaults()
-			.withDnsResolver(dnsResolver);
+		HttpClientSettings settings = HttpClientSettings.defaults().withDnsResolver(dnsResolver);
 		JettyClientHttpRequestFactory requestFactory = ClientHttpRequestFactoryBuilder.jetty().build(settings);
 
 		// Execute a request to trigger the DNS resolution process.

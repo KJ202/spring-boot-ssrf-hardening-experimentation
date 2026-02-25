@@ -46,7 +46,8 @@ public record HttpClientSettings(@Nullable HttpRedirects redirects, @Nullable Du
 	 * @since 4.0.0
 	 */
 	public HttpClientSettings withConnectTimeout(@Nullable Duration connectTimeout) {
-		return new HttpClientSettings(this.redirects, connectTimeout, this.readTimeout, this.sslBundle, this.dnsResolver);
+		return new HttpClientSettings(this.redirects, connectTimeout, this.readTimeout, this.sslBundle,
+				this.dnsResolver);
 	}
 
 	/**
@@ -57,7 +58,8 @@ public record HttpClientSettings(@Nullable HttpRedirects redirects, @Nullable Du
 	 * @since 4.0.0
 	 */
 	public HttpClientSettings withReadTimeout(@Nullable Duration readTimeout) {
-		return new HttpClientSettings(this.redirects, this.connectTimeout, readTimeout, this.sslBundle, this.dnsResolver);
+		return new HttpClientSettings(this.redirects, this.connectTimeout, readTimeout, this.sslBundle,
+				this.dnsResolver);
 	}
 
 	/**
@@ -80,7 +82,8 @@ public record HttpClientSettings(@Nullable HttpRedirects redirects, @Nullable Du
 	 * @since 4.0.0
 	 */
 	public HttpClientSettings withSslBundle(@Nullable SslBundle sslBundle) {
-		return new HttpClientSettings(this.redirects, this.connectTimeout, this.readTimeout, sslBundle, this.dnsResolver);
+		return new HttpClientSettings(this.redirects, this.connectTimeout, this.readTimeout, sslBundle,
+				this.dnsResolver);
 	}
 
 	/**
@@ -91,8 +94,8 @@ public record HttpClientSettings(@Nullable HttpRedirects redirects, @Nullable Du
 	 * @since 4.0.0
 	 */
 	public HttpClientSettings withDnsResolver(@Nullable Object dnsResolver) {
-		return new HttpClientSettings(this.redirects, this.connectTimeout, this.readTimeout,
-				this.sslBundle, dnsResolver);
+		return new HttpClientSettings(this.redirects, this.connectTimeout, this.readTimeout, this.sslBundle,
+				dnsResolver);
 	}
 
 	/**
@@ -102,7 +105,8 @@ public record HttpClientSettings(@Nullable HttpRedirects redirects, @Nullable Du
 	 * @since 4.0.0
 	 */
 	public HttpClientSettings withRedirects(@Nullable HttpRedirects redirects) {
-		return new HttpClientSettings(redirects, this.connectTimeout, this.readTimeout, this.sslBundle, this.dnsResolver);
+		return new HttpClientSettings(redirects, this.connectTimeout, this.readTimeout, this.sslBundle,
+				this.dnsResolver);
 	}
 
 	/**

@@ -26,9 +26,12 @@ import java.util.Map;
 import org.eclipse.jetty.util.Promise;
 import org.eclipse.jetty.util.SocketAddressResolver;
 
+import org.springframework.security.web.util.matcher.InetAddressMatcher;
+
 /**
- * {@link SocketAddressResolver} implementation that delegates to a {@link SocketAddressResolver} and filters
- * the results using a {@link SecurityDnsHandler}.
+ * {@link SocketAddressResolver} implementation that delegates to a
+ * {@link SocketAddressResolver} and filters the results using a
+ * {@link SecurityDnsHandler}.
  *
  * @author Kian Jamali
  * @since 3.5.0
@@ -37,15 +40,15 @@ public class JettyDnsResolver implements SocketAddressResolver {
 
 	private final SocketAddressResolver delegate;
 
-	private final SecurityDnsHandler securityDnsHandler;
+	private final InetAddressMatcher inetAddressMatcher;
 
-	public JettyDnsResolver(SecurityDnsHandler securityDnsHandler) {
-		this(new SocketAddressResolver.Sync(), securityDnsHandler);
+	public JettyDnsResolver(InetAddressMatcher inetAddressMatcher) {
+		this(new SocketAddressResolver.Sync(), inetAddressMatcher);
 	}
 
-	public JettyDnsResolver(SocketAddressResolver delegate, SecurityDnsHandler securityDnsHandler) {
+	public JettyDnsResolver(SocketAddressResolver delegate, InetAddressMatcher inetAddressMatcher) {
 		this.delegate = delegate;
-		this.securityDnsHandler = securityDnsHandler;
+		this.inetAddressMatcher = inetAddressMatcher;
 	}
 
 	@Override
@@ -63,22 +66,18 @@ public class JettyDnsResolver implements SocketAddressResolver {
 		});
 	}
 
-	private void resolveSucceeded(String host, List<InetSocketAddress> result, Promise<List<InetSocketAddress>> promise) {
+	private void resolveSucceeded(String host, List<InetSocketAddress> result,
+			Promise<List<InetSocketAddress>> promise) {
 		try {
-			List<InetAddress> inetAddresses = new ArrayList<>();
-			for (InetSocketAddress address : result) {
-				inetAddresses.add(address.getAddress());
-			}
-			List<InetAddress> allowed = JettyDnsResolver.this.securityDnsHandler.handleAddresses(inetAddresses);
-			if (allowed.isEmpty()) {
-				promise.failed(new UnknownHostException("No allowed IP addresses found for " + host));
-				return;
-			}
 			List<InetSocketAddress> allowedSocketAddresses = new ArrayList<>();
 			for (InetSocketAddress address : result) {
-				if (allowed.contains(address.getAddress())) {
+				if (JettyDnsResolver.this.inetAddressMatcher.matches(address.getAddress())) {
 					allowedSocketAddresses.add(address);
 				}
+			}
+			if (allowedSocketAddresses.isEmpty()) {
+				promise.failed(new UnknownHostException("No allowed IP addresses found for " + host));
+				return;
 			}
 			promise.succeeded(allowedSocketAddresses);
 		}

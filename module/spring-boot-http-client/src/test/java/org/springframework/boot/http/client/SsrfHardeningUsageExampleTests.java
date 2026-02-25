@@ -25,7 +25,8 @@ import org.junit.jupiter.api.Test;
 
 import org.springframework.boot.web.client.HttpComponentsDnsResolver;
 import org.springframework.boot.web.client.JettyDnsResolver;
-import org.springframework.boot.web.client.SecurityDnsHandler;
+import org.springframework.security.web.util.matcher.InetAddressMatcher;
+import org.springframework.security.web.util.matcher.InetAddressMatchers;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.client.ClientHttpRequestFactory;
 
@@ -38,15 +39,12 @@ class SsrfHardeningUsageExampleTests {
 
 	@Test
 	void apacheHttpClientWithSsrfHardening() {
-		// 1. Create a SecurityDnsHandler with your desired rules.
-		// In this example, we block all internal IPs (like 127.0.0.1, 192.168.x.x, etc.).
-		SecurityDnsHandler securityDnsHandler = SecurityDnsHandler.builder()
-			.blockAllInternal(true) // Block access to internal networks
-			.build();
+		// 1. Create an InetAddressMatcher to identify external IPs.
+		InetAddressMatcher externalMatcher = InetAddressMatchers.matchExternal().build();
 
-		// 2. Create a DnsResolver that uses the SecurityDnsHandler.
-		// This adapter bridges the Spring Boot security handler to the Apache HttpClient API.
-		DnsResolver dnsResolver = new HttpComponentsDnsResolver(securityDnsHandler);
+		// 2. Create a DnsResolver that uses the InetAddressMatcher.
+		// This adapter bridges the Spring Security matcher to the Apache HttpClient API.
+		DnsResolver dnsResolver = new HttpComponentsDnsResolver(externalMatcher);
 
 		// 3. Configure HttpClientSettings with the custom DnsResolver.
 		HttpClientSettings settings = HttpClientSettings.defaults().withDnsResolver(dnsResolver);
@@ -63,13 +61,11 @@ class SsrfHardeningUsageExampleTests {
 
 	@Test
 	void jettyHttpClientWithSsrfHardening() {
-		// 1. Create a SecurityDnsHandler with your desired rules.
-		SecurityDnsHandler securityDnsHandler = SecurityDnsHandler.builder()
-			.blockAllInternal(true)
-			.build();
+		// 1. Create an InetAddressMatcher to allow external IPs.
+		InetAddressMatcher externalMatcher = InetAddressMatchers.matchExternal().build();
 
-		// 2. Create a SocketAddressResolver that uses the SecurityDnsHandler.
-		SocketAddressResolver dnsResolver = new JettyDnsResolver(securityDnsHandler);
+		// 2. Create a SocketAddressResolver that uses the InetAddressMatcher.
+		SocketAddressResolver dnsResolver = new JettyDnsResolver(externalMatcher);
 
 		// 3. Configure HttpClientSettings with the custom DnsResolver.
 		HttpClientSettings settings = HttpClientSettings.defaults().withDnsResolver(dnsResolver);
@@ -85,17 +81,13 @@ class SsrfHardeningUsageExampleTests {
 
 	@Test
 	void reactorNettyHttpClientWithSsrfHardening() {
-		// 1. Create a SecurityDnsHandler with your desired rules.
-		SecurityDnsHandler securityDnsHandler = SecurityDnsHandler.builder()
-			.blockAllInternal(true)
-			.build();
+		// 1. Create an InetAddressMatcher to allow external IPs.
+		InetAddressMatcher externalMatcher = InetAddressMatchers.matchExternal().build();
 
-		// 2. Build the ClientHttpRequestFactory using a customizer to set the resolvedAddressesSelector.
+		// 2. Build the ClientHttpRequestFactory using a customizer to set the
+		// dnsResolver.
 		ClientHttpRequestFactory requestFactory = ClientHttpRequestFactoryBuilder.reactor()
-			.withHttpClientCustomizer((httpClient) -> httpClient.resolvedAddressesSelector(
-				(config, resolvedAddresses) -> securityDnsHandler.handleSocketAddresses(resolvedAddresses)
-			))
-			.build();
+			.build(HttpClientSettings.defaults().withDnsResolver(externalMatcher));
 
 		// 3. Use the factory to create requests.
 		assertThatExceptionOfType(Exception.class).isThrownBy(() -> {

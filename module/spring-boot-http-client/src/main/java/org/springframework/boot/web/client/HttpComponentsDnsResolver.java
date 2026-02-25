@@ -18,11 +18,13 @@ package org.springframework.boot.web.client;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.hc.client5.http.DnsResolver;
 import org.apache.hc.client5.http.SystemDefaultDnsResolver;
+
+import org.springframework.security.web.util.matcher.InetAddressMatcher;
 
 /**
  * {@link DnsResolver} implementation that delegates to a {@link DnsResolver} and filters
@@ -35,21 +37,26 @@ public class HttpComponentsDnsResolver implements DnsResolver {
 
 	private final DnsResolver delegate;
 
-	private final SecurityDnsHandler securityDnsHandler;
+	private final InetAddressMatcher inetAddressMatcher;
 
-	public HttpComponentsDnsResolver(DnsResolver delegate, SecurityDnsHandler securityDnsHandler) {
+	public HttpComponentsDnsResolver(DnsResolver delegate, InetAddressMatcher inetAddressMatcher) {
 		this.delegate = delegate;
-		this.securityDnsHandler = securityDnsHandler;
+		this.inetAddressMatcher = inetAddressMatcher;
 	}
 
-	public HttpComponentsDnsResolver(SecurityDnsHandler securityDnsHandler) {
-		this(SystemDefaultDnsResolver.INSTANCE, securityDnsHandler);
+	public HttpComponentsDnsResolver(InetAddressMatcher inetAddressMatcher) {
+		this(SystemDefaultDnsResolver.INSTANCE, inetAddressMatcher);
 	}
 
 	@Override
 	public InetAddress[] resolve(String host) throws UnknownHostException {
 		InetAddress[] addresses = this.delegate.resolve(host);
-		List<InetAddress> inetAddresses = this.securityDnsHandler.handleAddresses(Arrays.asList(addresses));
+		List<InetAddress> inetAddresses = new ArrayList<>();
+		for (InetAddress address : addresses) {
+			if (this.inetAddressMatcher.matches(address)) {
+				inetAddresses.add(address);
+			}
+		}
 		if (inetAddresses.isEmpty()) {
 			throw new UnknownHostException("No allowed IP addresses found for " + host);
 		}

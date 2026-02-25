@@ -27,7 +27,7 @@ import reactor.netty.http.client.HttpClient;
 
 import org.springframework.boot.http.client.HttpClientSettings;
 import org.springframework.boot.http.client.ReactorHttpClientBuilder;
-import org.springframework.boot.web.client.SecurityDnsHandler;
+import org.springframework.security.web.util.matcher.InetAddressMatcher;
 import org.springframework.http.client.ReactorResourceFactory;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.util.Assert;
@@ -115,9 +115,9 @@ public final class ReactorClientHttpConnectorBuilder
 	@Override
 	protected ReactorClientHttpConnector createClientHttpConnector(HttpClientSettings settings) {
 		Object dnsResolver = settings.dnsResolver();
-		if (dnsResolver instanceof SecurityDnsHandler securityDnsHandler) {
+		if (dnsResolver instanceof InetAddressMatcher inetAddressMatcher) {
 			this.httpClientBuilder.withHttpClientCustomizer((httpClient) -> httpClient
-				.resolvedAddressesSelector(new NettyHttpClientAddressSelector(securityDnsHandler)));
+				.resolvedAddressesSelector(new NettyHttpClientAddressSelector(inetAddressMatcher)));
 		}
 		HttpClient httpClient = this.httpClientBuilder.build(settings);
 		return new ReactorClientHttpConnector(httpClient);
