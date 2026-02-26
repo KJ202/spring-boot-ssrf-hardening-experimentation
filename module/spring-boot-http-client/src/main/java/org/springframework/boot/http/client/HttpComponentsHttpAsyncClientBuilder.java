@@ -57,21 +57,25 @@ public final class HttpComponentsHttpAsyncClientBuilder {
 
 	private final Function<@Nullable SslBundle, @Nullable TlsStrategy> tlsStrategyFactory;
 
+	private final org.apache.hc.client5.http.@Nullable DnsResolver dnsResolver;
+
 	public HttpComponentsHttpAsyncClientBuilder() {
 		this(Empty.consumer(), Empty.consumer(), Empty.consumer(), Empty.consumer(),
-				HttpComponentsSslBundleTlsStrategy::get);
+				HttpComponentsSslBundleTlsStrategy::get, null);
 	}
 
 	private HttpComponentsHttpAsyncClientBuilder(Consumer<HttpAsyncClientBuilder> customizer,
 			Consumer<PoolingAsyncClientConnectionManagerBuilder> connectionManagerCustomizer,
 			Consumer<ConnectionConfig.Builder> connectionConfigCustomizer,
 			Consumer<RequestConfig.Builder> defaultRequestConfigCustomizer,
-			Function<@Nullable SslBundle, @Nullable TlsStrategy> tlsStrategyFactory) {
+			Function<@Nullable SslBundle, @Nullable TlsStrategy> tlsStrategyFactory,
+			org.apache.hc.client5.http.@Nullable DnsResolver dnsResolver) {
 		this.customizer = customizer;
 		this.connectionManagerCustomizer = connectionManagerCustomizer;
 		this.connectionConfigCustomizer = connectionConfigCustomizer;
 		this.defaultRequestConfigCustomizer = defaultRequestConfigCustomizer;
 		this.tlsStrategyFactory = tlsStrategyFactory;
+		this.dnsResolver = dnsResolver;
 	}
 
 	/**
@@ -84,7 +88,7 @@ public final class HttpComponentsHttpAsyncClientBuilder {
 		Assert.notNull(customizer, "'customizer' must not be null");
 		return new HttpComponentsHttpAsyncClientBuilder(this.customizer.andThen(customizer),
 				this.connectionManagerCustomizer, this.connectionConfigCustomizer, this.defaultRequestConfigCustomizer,
-				this.tlsStrategyFactory);
+				this.tlsStrategyFactory, this.dnsResolver);
 	}
 
 	/**
@@ -98,7 +102,7 @@ public final class HttpComponentsHttpAsyncClientBuilder {
 		Assert.notNull(connectionManagerCustomizer, "'connectionManagerCustomizer' must not be null");
 		return new HttpComponentsHttpAsyncClientBuilder(this.customizer,
 				this.connectionManagerCustomizer.andThen(connectionManagerCustomizer), this.connectionConfigCustomizer,
-				this.defaultRequestConfigCustomizer, this.tlsStrategyFactory);
+				this.defaultRequestConfigCustomizer, this.tlsStrategyFactory, this.dnsResolver);
 	}
 
 	/**
@@ -113,7 +117,7 @@ public final class HttpComponentsHttpAsyncClientBuilder {
 		Assert.notNull(connectionConfigCustomizer, "'connectionConfigCustomizer' must not be null");
 		return new HttpComponentsHttpAsyncClientBuilder(this.customizer, this.connectionManagerCustomizer,
 				this.connectionConfigCustomizer.andThen(connectionConfigCustomizer),
-				this.defaultRequestConfigCustomizer, this.tlsStrategyFactory);
+				this.defaultRequestConfigCustomizer, this.tlsStrategyFactory, this.dnsResolver);
 	}
 
 	/**
@@ -127,7 +131,8 @@ public final class HttpComponentsHttpAsyncClientBuilder {
 			Function<@Nullable SslBundle, @Nullable TlsStrategy> tlsStrategyFactory) {
 		Assert.notNull(tlsStrategyFactory, "'tlsStrategyFactory' must not be null");
 		return new HttpComponentsHttpAsyncClientBuilder(this.customizer, this.connectionManagerCustomizer,
-				this.connectionConfigCustomizer, this.defaultRequestConfigCustomizer, tlsStrategyFactory);
+				this.connectionConfigCustomizer, this.defaultRequestConfigCustomizer, tlsStrategyFactory,
+				this.dnsResolver);
 	}
 
 	/**
@@ -143,7 +148,21 @@ public final class HttpComponentsHttpAsyncClientBuilder {
 		Assert.notNull(defaultRequestConfigCustomizer, "'defaultRequestConfigCustomizer' must not be null");
 		return new HttpComponentsHttpAsyncClientBuilder(this.customizer, this.connectionManagerCustomizer,
 				this.connectionConfigCustomizer,
-				this.defaultRequestConfigCustomizer.andThen(defaultRequestConfigCustomizer), this.tlsStrategyFactory);
+				this.defaultRequestConfigCustomizer.andThen(defaultRequestConfigCustomizer), this.tlsStrategyFactory,
+				this.dnsResolver);
+	}
+
+	/**
+	 * Return a new {@link HttpComponentsHttpAsyncClientBuilder} with a replacement
+	 * {@link org.apache.hc.client5.http.DnsResolver}.
+	 * @param dnsResolver the new DNS resolver
+	 * @return a new {@link HttpComponentsHttpAsyncClientBuilder} instance
+	 */
+	public HttpComponentsHttpAsyncClientBuilder withDnsResolver(org.apache.hc.client5.http.DnsResolver dnsResolver) {
+		Assert.notNull(dnsResolver, "'dnsResolver' must not be null");
+		return new HttpComponentsHttpAsyncClientBuilder(this.customizer, this.connectionManagerCustomizer,
+				this.connectionConfigCustomizer, this.defaultRequestConfigCustomizer, this.tlsStrategyFactory,
+				dnsResolver);
 	}
 
 	/**
@@ -165,6 +184,9 @@ public final class HttpComponentsHttpAsyncClientBuilder {
 	private PoolingAsyncClientConnectionManager createConnectionManager(HttpClientSettings settings) {
 		PoolingAsyncClientConnectionManagerBuilder builder = PoolingAsyncClientConnectionManagerBuilder.create()
 			.useSystemProperties();
+		if (this.dnsResolver != null) {
+			builder.setDnsResolver(this.dnsResolver);
+		}
 		PropertyMapper map = PropertyMapper.get();
 		builder.setDefaultConnectionConfig(createConnectionConfig(settings));
 		map.from(settings::sslBundle).as(this.tlsStrategyFactory::apply).to(builder::setTlsStrategy);

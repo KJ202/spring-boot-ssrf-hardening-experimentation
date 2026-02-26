@@ -142,7 +142,16 @@ public final class HttpComponentsClientHttpConnectorBuilder
 
 	@Override
 	protected HttpComponentsClientHttpConnector createClientHttpConnector(HttpClientSettings settings) {
-		CloseableHttpAsyncClient client = this.httpClientBuilder.build(settings);
+		HttpComponentsHttpAsyncClientBuilder builder = this.httpClientBuilder;
+		Object dnsResolver = settings.dnsResolver();
+		if (dnsResolver instanceof org.apache.hc.client5.http.DnsResolver hcDnsResolver) {
+			builder = builder.withDnsResolver(hcDnsResolver);
+		}
+		else if (dnsResolver != null && ClassUtils.isPresent(
+				"org.springframework.security.web.util.matcher.InetAddressMatcher", getClass().getClassLoader())) {
+			builder = InetAddressMatcherDelegate.applyIfMatcher(builder, dnsResolver);
+		}
+		CloseableHttpAsyncClient client = builder.build(settings);
 		return new HttpComponentsClientHttpConnector(client);
 	}
 
@@ -155,6 +164,19 @@ public final class HttpComponentsClientHttpConnectorBuilder
 		static boolean present(@Nullable ClassLoader classLoader) {
 			return ClassUtils.isPresent(HTTP_CLIENTS, classLoader)
 					&& ClassUtils.isPresent(REACTIVE_RESPONSE_CONSUMER, classLoader);
+		}
+
+	}
+
+	private static class InetAddressMatcherDelegate {
+
+		static HttpComponentsHttpAsyncClientBuilder applyIfMatcher(HttpComponentsHttpAsyncClientBuilder builder,
+				Object dnsResolver) {
+			if (dnsResolver instanceof org.springframework.security.web.util.matcher.InetAddressMatcher inetAddressMatcher) {
+				return builder.withDnsResolver(
+						new org.springframework.boot.web.client.HttpComponentsDnsResolver(inetAddressMatcher));
+			}
+			return builder;
 		}
 
 	}

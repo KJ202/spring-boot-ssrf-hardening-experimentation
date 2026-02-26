@@ -129,7 +129,16 @@ public final class JettyClientHttpConnectorBuilder
 
 	@Override
 	protected JettyClientHttpConnector createClientHttpConnector(HttpClientSettings settings) {
-		HttpClient httpClient = this.httpClientBuilder.build(settings);
+		JettyHttpClientBuilder builder = this.httpClientBuilder;
+		Object dnsResolver = settings.dnsResolver();
+		if (dnsResolver instanceof org.eclipse.jetty.util.SocketAddressResolver socketAddressResolver) {
+			builder = builder.withDnsResolver(socketAddressResolver);
+		}
+		else if (dnsResolver != null && ClassUtils.isPresent(
+				"org.springframework.security.web.util.matcher.InetAddressMatcher", getClass().getClassLoader())) {
+			builder = InetAddressMatcherDelegate.applyIfMatcher(builder, dnsResolver);
+		}
+		HttpClient httpClient = builder.build(settings);
 		return new JettyClientHttpConnector(httpClient);
 	}
 
@@ -142,6 +151,18 @@ public final class JettyClientHttpConnectorBuilder
 		static boolean present(@Nullable ClassLoader classLoader) {
 			return ClassUtils.isPresent(HTTP_CLIENT, classLoader)
 					&& ClassUtils.isPresent(REACTIVE_REQUEST, classLoader);
+		}
+
+	}
+
+	private static class InetAddressMatcherDelegate {
+
+		static JettyHttpClientBuilder applyIfMatcher(JettyHttpClientBuilder builder, Object dnsResolver) {
+			if (dnsResolver instanceof org.springframework.security.web.util.matcher.InetAddressMatcher inetAddressMatcher) {
+				return builder.withDnsResolver(
+						new org.springframework.boot.web.client.JettyDnsResolver(inetAddressMatcher));
+			}
+			return builder;
 		}
 
 	}
