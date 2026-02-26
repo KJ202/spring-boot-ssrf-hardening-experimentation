@@ -27,6 +27,7 @@ import org.eclipse.jetty.util.Promise;
 import org.eclipse.jetty.util.SocketAddressResolver;
 
 import org.springframework.security.web.util.matcher.InetAddressMatcher;
+import org.springframework.util.Assert;
 
 /**
  * {@link SocketAddressResolver} implementation that delegates to a
@@ -47,6 +48,8 @@ public class JettyDnsResolver implements SocketAddressResolver {
 	}
 
 	public JettyDnsResolver(SocketAddressResolver delegate, InetAddressMatcher inetAddressMatcher) {
+		Assert.notNull(delegate, "Delegate must not be null");
+		Assert.notNull(inetAddressMatcher, "InetAddressMatcher must not be null");
 		this.delegate = delegate;
 		this.inetAddressMatcher = inetAddressMatcher;
 	}

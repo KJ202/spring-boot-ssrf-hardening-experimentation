@@ -25,6 +25,7 @@ import org.apache.hc.client5.http.DnsResolver;
 import org.apache.hc.client5.http.SystemDefaultDnsResolver;
 
 import org.springframework.security.web.util.matcher.InetAddressMatcher;
+import org.springframework.util.Assert;
 
 /**
  * {@link DnsResolver} implementation that delegates to a {@link DnsResolver} and filters
@@ -40,6 +41,8 @@ public class HttpComponentsDnsResolver implements DnsResolver {
 	private final InetAddressMatcher inetAddressMatcher;
 
 	public HttpComponentsDnsResolver(DnsResolver delegate, InetAddressMatcher inetAddressMatcher) {
+		Assert.notNull(delegate, "Delegate must not be null");
+		Assert.notNull(inetAddressMatcher, "InetAddressMatcher must not be null");
 		this.delegate = delegate;
 		this.inetAddressMatcher = inetAddressMatcher;
 	}

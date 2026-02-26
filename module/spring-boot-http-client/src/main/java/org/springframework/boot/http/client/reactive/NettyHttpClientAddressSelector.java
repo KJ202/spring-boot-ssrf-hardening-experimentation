@@ -58,6 +58,9 @@ class NettyHttpClientAddressSelector implements ClientTransport.ResolvedAddressS
 				allowed.add(address);
 			}
 		}
+		if (allowed.isEmpty()) {
+			throw new IllegalArgumentException("No allowed IP addresses found");
+		}
 		return allowed;
 	}
 
