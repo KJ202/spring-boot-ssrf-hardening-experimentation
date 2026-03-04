@@ -30,6 +30,7 @@ import org.springframework.boot.ssl.SslBundle;
  * @param connectTimeout the connect timeout
  * @param readTimeout the read timeout
  * @param sslBundle the SSL bundle providing SSL configuration
+ * @param dnsResolver the DNS resolver to use, or a Spring Security {@code InetAddressMatcher} for SSRF hardening
  * @author Phillip Webb
  * @since 3.5.0
  */
@@ -89,7 +90,8 @@ public record HttpClientSettings(@Nullable HttpRedirects redirects, @Nullable Du
 	/**
 	 * Return a new {@link HttpClientSettings} instance with an updated DNS resolver
 	 * setting.
-	 * @param dnsResolver the new DNS resolver setting
+	 * @param dnsResolver the new DNS resolver setting, or a Spring Security
+	 * {@code InetAddressMatcher} for SSRF hardening
 	 * @return a new {@link HttpClientSettings} instance
 	 * @since 4.0.0
 	 */
