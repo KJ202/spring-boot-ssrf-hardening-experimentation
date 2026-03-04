@@ -47,7 +47,7 @@ class HttpClientSettingsTests {
 
 	@Test
 	void createWithNulls() {
-		HttpClientSettings settings = new HttpClientSettings(null, null, null, null);
+		HttpClientSettings settings = new HttpClientSettings(null, null, null, null, null);
 		assertThat(settings.redirects()).isNull();
 		assertThat(settings.connectTimeout()).isNull();
 		assertThat(settings.readTimeout()).isNull();
@@ -94,8 +94,8 @@ class HttpClientSettingsTests {
 	@Test
 	void orElseReturnsNewInstanceWithUpdatedValues() {
 		SslBundle sslBundle = mock(SslBundle.class);
-		HttpClientSettings settings = new HttpClientSettings(null, ONE_SECOND, null, null)
-			.orElse(new HttpClientSettings(HttpRedirects.FOLLOW_WHEN_POSSIBLE, TWO_SECONDS, TWO_SECONDS, sslBundle));
+		HttpClientSettings settings = new HttpClientSettings(null, ONE_SECOND, null, null, null).orElse(
+				new HttpClientSettings(HttpRedirects.FOLLOW_WHEN_POSSIBLE, TWO_SECONDS, TWO_SECONDS, sslBundle, null));
 		assertThat(settings.redirects()).isEqualTo(HttpRedirects.FOLLOW_WHEN_POSSIBLE);
 		assertThat(settings.connectTimeout()).isEqualTo(ONE_SECOND);
 		assertThat(settings.readTimeout()).isEqualTo(TWO_SECONDS);

@@ -113,6 +113,11 @@ public final class ReactorClientHttpConnectorBuilder
 
 	@Override
 	protected ReactorClientHttpConnector createClientHttpConnector(HttpClientSettings settings) {
+		Object dnsResolver = settings.dnsResolver();
+		if (dnsResolver != null && ClassUtils.isPresent(
+				"org.springframework.security.web.util.matcher.InetAddressMatcher", getClass().getClassLoader())) {
+			InetAddressMatcherDelegate.applyIfMatcher(this.httpClientBuilder, dnsResolver);
+		}
 		HttpClient httpClient = this.httpClientBuilder.build(settings);
 		return new ReactorClientHttpConnector(httpClient);
 	}
@@ -123,6 +128,20 @@ public final class ReactorClientHttpConnectorBuilder
 
 		static boolean present(@Nullable ClassLoader classLoader) {
 			return ClassUtils.isPresent(HTTP_CLIENT, classLoader);
+		}
+
+	}
+
+	/**
+	 * Inner class to avoid a hard dependency on Spring Security at the class level.
+	 */
+	private static class InetAddressMatcherDelegate {
+
+		static void applyIfMatcher(ReactorHttpClientBuilder builder, Object dnsResolver) {
+			if (dnsResolver instanceof org.springframework.security.web.util.matcher.InetAddressMatcher inetAddressMatcher) {
+				builder.withHttpClientCustomizer((httpClient) -> httpClient
+					.resolvedAddressesSelector(new NettyHttpClientAddressSelector(inetAddressMatcher)));
+			}
 		}
 
 	}

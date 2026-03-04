@@ -1,0 +1,68 @@
+/*
+ * Copyright 2012-present the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.springframework.boot.web.client;
+
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.Arrays;
+
+import org.apache.hc.client5.http.DnsResolver;
+import org.apache.hc.client5.http.SystemDefaultDnsResolver;
+
+import org.springframework.security.web.util.matcher.InetAddressMatcher;
+import org.springframework.util.Assert;
+
+/**
+ * {@link DnsResolver} implementation that delegates to a {@link DnsResolver} and filters
+ * the results using a {@link SecurityDnsHandler}.
+ *
+ * @author Scott Frederick
+ * @since 3.2.0
+ */
+public class HttpComponentsDnsResolver implements DnsResolver {
+
+	private final DnsResolver delegate;
+
+	private final InetAddressMatcher inetAddressMatcher;
+
+	public HttpComponentsDnsResolver(DnsResolver delegate, InetAddressMatcher inetAddressMatcher) {
+		Assert.notNull(delegate, "Delegate must not be null");
+		Assert.notNull(inetAddressMatcher, "InetAddressMatcher must not be null");
+		this.delegate = delegate;
+		this.inetAddressMatcher = inetAddressMatcher;
+	}
+
+	public HttpComponentsDnsResolver(InetAddressMatcher inetAddressMatcher) {
+		this(SystemDefaultDnsResolver.INSTANCE, inetAddressMatcher);
+	}
+
+	@Override
+	public InetAddress[] resolve(String host) throws UnknownHostException {
+		InetAddress[] addresses = Arrays.stream(this.delegate.resolve(host))
+				.filter(this.inetAddressMatcher::matches).toArray(InetAddress[]::new);
+		if (addresses.length == 0) {
+			throw new UnknownHostException("No allowed IP addresses found for " + host);
+		}
+		return addresses;
+	}
+
+	@Override
+	public String resolveCanonicalHostname(String host) throws UnknownHostException {
+		return this.delegate.resolveCanonicalHostname(host);
+	}
+
+}
