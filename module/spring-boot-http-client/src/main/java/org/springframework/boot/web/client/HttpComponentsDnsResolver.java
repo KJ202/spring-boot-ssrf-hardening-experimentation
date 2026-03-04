@@ -18,8 +18,7 @@ package org.springframework.boot.web.client;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Arrays;
 
 import org.apache.hc.client5.http.DnsResolver;
 import org.apache.hc.client5.http.SystemDefaultDnsResolver;
@@ -53,17 +52,12 @@ public class HttpComponentsDnsResolver implements DnsResolver {
 
 	@Override
 	public InetAddress[] resolve(String host) throws UnknownHostException {
-		InetAddress[] addresses = this.delegate.resolve(host);
-		List<InetAddress> inetAddresses = new ArrayList<>();
-		for (InetAddress address : addresses) {
-			if (this.inetAddressMatcher.matches(address)) {
-				inetAddresses.add(address);
-			}
-		}
-		if (inetAddresses.isEmpty()) {
+		InetAddress[] addresses = Arrays.stream(this.delegate.resolve(host))
+				.filter(this.inetAddressMatcher::matches).toArray(InetAddress[]::new);
+		if (addresses.length == 0) {
 			throw new UnknownHostException("No allowed IP addresses found for " + host);
 		}
-		return inetAddresses.toArray(new InetAddress[0]);
+		return addresses;
 	}
 
 	@Override

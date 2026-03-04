@@ -18,8 +18,6 @@ package org.springframework.boot.web.client;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -57,9 +55,14 @@ public class JettyDnsResolver implements SocketAddressResolver {
 	@Override
 	public void resolve(String host, int port, Map<String, Object> tag, Promise<List<InetSocketAddress>> promise) {
 		this.delegate.resolve(host, port, tag, new Promise<>() {
+
 			@Override
 			public void succeeded(List<InetSocketAddress> result) {
-				resolveSucceeded(host, result, promise);
+				promise.succeeded(result.stream()
+						.map(InetSocketAddress::getAddress)
+						.filter(inetAddressMatcher::matches)
+						.map(address -> new InetSocketAddress(address, port))
+						.toList());
 			}
 
 			@Override
@@ -67,26 +70,6 @@ public class JettyDnsResolver implements SocketAddressResolver {
 				promise.failed(x);
 			}
 		});
-	}
-
-	private void resolveSucceeded(String host, List<InetSocketAddress> result,
-			Promise<List<InetSocketAddress>> promise) {
-		try {
-			List<InetSocketAddress> allowedSocketAddresses = new ArrayList<>();
-			for (InetSocketAddress address : result) {
-				if (JettyDnsResolver.this.inetAddressMatcher.matches(address.getAddress())) {
-					allowedSocketAddresses.add(address);
-				}
-			}
-			if (allowedSocketAddresses.isEmpty()) {
-				promise.failed(new UnknownHostException("No allowed IP addresses found for " + host));
-				return;
-			}
-			promise.succeeded(allowedSocketAddresses);
-		}
-		catch (Exception ex) {
-			promise.failed(ex);
-		}
 	}
 
 }

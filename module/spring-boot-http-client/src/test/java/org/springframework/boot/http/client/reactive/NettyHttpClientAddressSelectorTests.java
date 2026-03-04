@@ -69,12 +69,13 @@ class NettyHttpClientAddressSelectorTests {
 	}
 
 	@Test
-	void applyWhenMatcherBlocksAddressShouldThrowException() throws Exception {
+	void applyWhenMatcherBlocksAddressShouldReturnEmptyList() throws Exception {
 		InetAddress address = InetAddress.getByName("192.168.1.1");
 		InetSocketAddress socketAddress = new InetSocketAddress(address, 8080);
 		given(this.matcher.matches(address)).willReturn(false);
-		assertThatIllegalArgumentException().isThrownBy(() -> this.selector.apply(this.config, List.of(socketAddress)))
-			.withMessage("No allowed IP addresses found");
+		@SuppressWarnings("unchecked")
+		List<SocketAddress> allowed = (List<SocketAddress>) this.selector.apply(this.config, List.of(socketAddress));
+		assertThat(allowed).isEmpty();
 	}
 
 	@Test

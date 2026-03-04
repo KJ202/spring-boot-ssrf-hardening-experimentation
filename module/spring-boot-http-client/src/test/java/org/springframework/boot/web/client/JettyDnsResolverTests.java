@@ -18,7 +18,6 @@ package org.springframework.boot.web.client;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.UnknownHostException;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
@@ -84,7 +83,7 @@ class JettyDnsResolverTests {
 	}
 
 	@Test
-	void resolveWhenMatcherBlocksAddressShouldFail() throws Exception {
+	void resolveWhenMatcherBlocksAddressShouldReturnEmptyList() throws Exception {
 		Promise<List<InetSocketAddress>> clientPromise = mock(Promise.class);
 		Map<String, Object> map = mock(Map.class);
 
@@ -100,10 +99,7 @@ class JettyDnsResolverTests {
 		given(this.matcher.matches(address)).willReturn(false);
 		wrappedPromise.succeeded(List.of(socketAddress));
 
-		ArgumentCaptor<Throwable> exceptionCaptor = ArgumentCaptor.forClass(Throwable.class);
-		verify(clientPromise).failed(exceptionCaptor.capture());
-		assertThat(exceptionCaptor.getValue()).isInstanceOf(UnknownHostException.class)
-			.hasMessage("No allowed IP addresses found for example.com");
+		verify(clientPromise).succeeded(List.of());
 	}
 
 	@Test

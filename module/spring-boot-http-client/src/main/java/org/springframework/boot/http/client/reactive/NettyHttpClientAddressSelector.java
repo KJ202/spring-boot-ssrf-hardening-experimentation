@@ -44,24 +44,19 @@ class NettyHttpClientAddressSelector implements ClientTransport.ResolvedAddressS
 	@Override
 	public List<? extends SocketAddress> apply(ClientTransportConfig<?> clientTransportConfig,
 			List<? extends SocketAddress> resolvedAddresses) {
-		if (resolvedAddresses.isEmpty()) {
+		if (resolvedAddresses == null || resolvedAddresses.isEmpty()) {
 			return resolvedAddresses;
 		}
-		List<SocketAddress> allowed = new java.util.ArrayList<>();
-		for (SocketAddress address : resolvedAddresses) {
-			if (address instanceof java.net.InetSocketAddress inetAddress) {
-				if (this.inetAddressMatcher.matches(inetAddress.getAddress())) {
-					allowed.add(address);
-				}
-			}
-			else {
-				allowed.add(address);
-			}
-		}
-		if (allowed.isEmpty()) {
-			throw new IllegalArgumentException("No allowed IP addresses found");
-		}
-		return allowed;
+		List<java.net.InetAddress> filteredIn = resolvedAddresses.stream()
+				.filter(java.net.InetSocketAddress.class::isInstance)
+				.map(java.net.InetSocketAddress.class::cast)
+				.map(java.net.InetSocketAddress::getAddress)
+				.filter(this.inetAddressMatcher::matches)
+				.toList();
+
+		return resolvedAddresses.stream()
+				.filter(sa -> !(sa instanceof java.net.InetSocketAddress isa) || filteredIn.contains(isa.getAddress()))
+				.collect(java.util.stream.Collectors.toList());
 	}
 
 }

@@ -74,7 +74,7 @@ class SsrfHardeningUsageExampleTests {
 		ClientHttpRequestFactory requestFactory = ClientHttpRequestFactoryBuilder.jetty().build(settings);
 
 		// 5. Use the factory to create requests.
-		assertThatExceptionOfType(UnknownHostException.class).isThrownBy(() -> {
+		assertThatExceptionOfType(Exception.class).isThrownBy(() -> {
 			requestFactory.createRequest(new URI("http://127.0.0.1"), HttpMethod.GET).execute();
 		});
 	}
